@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERapatUnsam</title>
-    <!-- Library untuk Export PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.1.1/index.css" rel="stylesheet">
@@ -49,14 +48,14 @@
         .card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; transition:all 0.2s ease; }
         .card-hover:hover { border-color:#d1d5db; box-shadow:0 4px 12px rgba(0,0,0,0.04); transform:translateY(-1px); }
         .card:active { transform:scale(0.99); }
-        .editor-wrapper { background:#fff; border:1.5px solid #e5e7eb; border-radius:14px; overflow:hidden; transition:border-color 0.2s, box-shadow 0.2s; }
+        .editor-wrapper { background:#fff; border:1.5px solid #e5e7eb; border-radius:14px; overflow:hidden; transition:border-color 0.2s, box-shadow 0.2s; height: calc(100vh - 180px); display: flex; flex-direction: column; }
         .editor-wrapper:focus-within { border-color:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,0.08); }
         .note-toolbar { background:#f9fafb; border-bottom:1px solid #e5e7eb; padding:6px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; }
         .tool-btn { padding:5px 7px; border-radius:6px; font-size:13px; font-weight:500; transition:all 0.12s; min-width:28px; min-height:28px; display:inline-flex; align-items:center; justify-content:center; color:#4b5563; cursor:pointer; border:none; background:transparent; }
         .tool-btn:hover { background:#e5e7eb; color:#111827; }
         .tool-btn.active { background:#2563eb; color:#fff; }
         .tool-sep { width:1px; height:20px; background:#d1d5db; margin:0 3px; }
-        .note-editor { min-height:320px; padding:20px 24px; outline:none; line-height:1.8; color:#374151; font-size:15px; }
+        .note-editor { padding:20px 24px; outline:none; line-height:1.8; color:#374151; font-size: 12pt; flex: 1; overflow-y: auto; }
         .note-editor:empty::before { content:attr(data-placeholder); color:#9ca3af; font-style:italic; pointer-events:none; }
         .note-editor ul { list-style:disc; padding-left:20px; margin-bottom:8px; }
         .note-editor ol { list-style:decimal; padding-left:20px; margin-bottom:8px; }
@@ -92,14 +91,16 @@
         .empty-state p { color:#9ca3af; font-size:13px; }
         .activity-item { padding:8px 0; border-bottom:1px solid #f3f4f6; }
         .activity-item:last-child { border-bottom:none; }
-        
-        /* Calendar Styles */
         .calendar-day { @apply flex items-center justify-center w-8 h-8 rounded-full text-xs cursor-pointer transition-all; }
         .calendar-day:hover { @apply bg-gray-100; }
         .calendar-day.has-event { @apply font-bold; position:relative; }
         .calendar-day.has-event::after { content:''; position:absolute; bottom:2px; width:4px; height:4px; background:#2563eb; border-radius:50%; }
         .calendar-day.today { @apply bg-brand text-white; }
         .calendar-day.selected { @apply ring-2 ring-brand ring-offset-2; }
+        
+        /* Focus Mode Styles */
+        .focus-mode .sidebar-col { display: none; }
+        .focus-mode .editor-wrapper { height: calc(100vh - 140px); }
     </style>
 </head>
 <body>
@@ -155,16 +156,12 @@
                     </div>
                     <div class="hidden sm:block"><h1 class="font-semibold text-gray-900 text-sm">ERapatUnsam</h1><p id="dashWelcome" class="text-[11px] text-muted truncate max-w-[140px]"></p></div>
                 </div>
-                
-                <!-- Quick Join Input -->
                 <div class="flex-1 max-w-xs hidden sm:flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/10 transition-all">
                     <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                     <input id="quickJoinPin" type="text" placeholder="Masuk PIN Rapat..." class="bg-transparent border-none text-sm w-full focus:ring-0 placeholder:text-gray-400" maxlength="6" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
                     <button onclick="handleQuickJoin()" class="text-brand font-semibold text-xs hover:underline">Gabung</button>
                 </div>
-
                 <div class="flex items-center gap-1 flex-shrink-0">
-                    <!-- NEW: Laporan Button -->
                     <button onclick="generateReport()" class="p-2 text-gray-400 hover:text-brand hover:bg-brand-light rounded-xl transition-all hidden sm:flex" title="Laporan Bulanan">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     </button>
@@ -173,7 +170,6 @@
                     <button onclick="handleLogout()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg></button>
                 </div>
             </div>
-            <!-- Mobile Quick Join & Report -->
             <div class="sm:hidden px-4 pb-3 flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg mx-4 mt-2 px-3 py-2">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                 <input id="quickJoinPinMobile" type="text" placeholder="Masuk PIN Rapat..." class="bg-transparent border-none text-sm w-full focus:ring-0 placeholder:text-gray-400" maxlength="6" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
@@ -188,21 +184,17 @@
                     <div class="card p-3 text-center"><p class="text-[10px] text-muted font-medium">Peserta</p><p id="statParticipants" class="text-lg font-bold text-amber-600 mt-0.5">0</p></div>
                     <div class="card p-3 text-center"><p class="text-[10px] text-muted font-medium">Notulensi</p><p id="statNotes" class="text-lg font-bold text-purple-600 mt-0.5">0</p></div>
                 </div>
-
-                <!-- NEW: Advanced Filter & Search Row -->
                 <div class="flex flex-col sm:flex-row gap-3 mb-5 items-center">
                     <div class="flex-1 w-full relative">
                         <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         <input id="searchInput" type="text" placeholder="Cari rapat..." class="input input-sm pl-9 w-full" oninput="handleSearch(this.value)">
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <!-- Status Filter -->
                         <select id="filterStatus" onchange="applyFilters()" class="input input-sm text-xs bg-white border-gray-200">
                             <option value="all">Semua Status</option>
                             <option value="aktif">Berlangsung</option>
                             <option value="selesai">Selesai</option>
                         </select>
-                        <!-- Role Filter -->
                         <select id="filterRole" onchange="applyFilters()" class="input input-sm text-xs bg-white border-gray-200">
                             <option value="all">Semua Peran</option>
                             <option value="notulen">Saya Notulen</option>
@@ -210,20 +202,15 @@
                         </select>
                     </div>
                 </div>
-
-                <!-- Pinned Rooms Section -->
                 <div id="pinnedSection" class="hidden mb-6">
                     <div class="flex items-center gap-2 mb-3"><span class="text-yellow-500">⭐</span><h2 class="text-sm font-semibold text-gray-900">Rapat Pilihan</h2></div>
                     <div id="pinnedRoomsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
                 </div>
-
                 <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-gray-900">Rapat Berlangsung</h2><span id="activeCount" class="badge badge-green">0</span></div>
                 <div id="activeRoomsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-7"></div>
                 <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-gray-900">Riwayat Rapat</h2><span id="recentCount" class="badge badge-gray">0</span></div>
                 <div id="recentRoomsList" class="space-y-2"></div>
             </div>
-
-            <!-- Sidebar: Activity Feed & Calendar -->
             <div class="lg:col-span-1 space-y-4">
                 <div class="card p-4">
                     <h3 class="text-xs font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -234,8 +221,6 @@
                         <div class="text-center py-4 text-gray-400">Menunggu aktivitas...</div>
                     </div>
                 </div>
-
-                <!-- NEW: Mini Calendar Widget -->
                 <div class="card p-4">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="text-xs font-semibold text-gray-900 flex items-center gap-2">
@@ -418,14 +403,23 @@
         </div>
     </div>
 
-    <!-- ============ ROOM VIEW ============ -->
+    <!-- ============ ROOM VIEW (UPDATED) ============ -->
     <div id="roomView" class="view min-h-screen flex-col bg-surface">
+        <!-- Header -->
         <div class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
-            <div class="max-w-6xl mx-auto px-5 py-3">
+            <div class="max-w-7xl mx-auto px-4 sm:px-5 py-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3 min-w-0 flex-1">
                         <button onclick="promptLeave()" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-xl transition-all flex-shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button>
-                        <div class="min-w-0 flex-1"><h2 id="rTitle" class="font-semibold text-gray-900 text-sm truncate"></h2><div class="flex items-center gap-2 mt-0.5"><span class="live-dot"></span><span class="text-[11px] text-emerald-600 font-medium">Berlangsung</span><span id="rTimer" class="text-[11px] font-mono font-semibold text-brand bg-brand-light px-1.5 py-0.5 rounded-md">00:00:00</span><span id="rDuration" class="text-[10px] text-muted"></span></div></div>
+                        <div class="min-w-0 flex-1">
+                            <h2 id="rTitle" class="font-bold text-gray-900 text-base truncate"></h2>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="live-dot"></span>
+                                <span class="text-[11px] text-emerald-600 font-medium">Berlangsung</span>
+                                <span id="rTimer" class="text-[11px] font-mono font-bold text-brand bg-brand-light px-2 py-0.5 rounded-md">00:00:00</span>
+                                <span id="rDuration" class="text-[10px] text-muted ml-1"></span>
+                            </div>
+                        </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0 ml-3">
                         <div id="rPinBox" class="hidden"><div class="flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-1.5"><span class="text-[10px] text-amber-600 font-medium">PIN</span><span id="rPin" class="font-bold text-amber-800 text-xs tracking-[0.15em]"></span><button onclick="copyPin()" class="p-0.5 text-amber-500 hover:text-amber-700"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button></div></div>
@@ -436,55 +430,91 @@
                 </div>
             </div>
         </div>
-        <div class="flex-1 max-w-6xl mx-auto w-full px-5 py-4 safe-b">
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <div class="lg:col-span-3">
-                    <div id="notulenMode" class="hidden">
-                        <div class="editor-wrapper">
-                            <div class="note-toolbar">
-                                <select id="fontSizeSelect" onchange="applyFontSize(this.value)" class="font-size-select" title="Ukuran Font"><option value="">Ukuran</option><option value="1">Kecil</option><option value="2">Normal</option><option value="3">Sedang</option><option value="4">Besar</option><option value="5">Sangat Besar</option></select>
+        
+        <!-- Main Content -->
+        <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-5 py-4 safe-b grid grid-cols-1 lg:grid-cols-4 gap-4 transition-all" id="roomGrid">
+            <div class="lg:col-span-3 flex flex-col h-full">
+                <div id="notulenMode" class="hidden flex-col h-full">
+                    <div class="editor-wrapper">
+                        <!-- Improved Toolbar -->
+                        <div class="note-toolbar">
+                            <div class="flex items-center gap-1 flex-wrap flex-1">
+                                <select id="fontSizeSelect" onchange="applyFontSizePt(this.value)" class="font-size-select w-16" title="Ukuran Font (pt)">
+                                    <option value="">Size</option>
+                                    <option value="8">8pt</option>
+                                    <option value="10">10pt</option>
+                                    <option value="12" selected>12pt</option>
+                                    <option value="14">14pt</option>
+                                    <option value="16">16pt</option>
+                                    <option value="18">18pt</option>
+                                    <option value="24">24pt</option>
+                                </select>
                                 <div class="tool-sep"></div>
-                                <button onclick="fmt('bold')" class="tool-btn font-bold">B</button>
-                                <button onclick="fmt('italic')" class="tool-btn italic">I</button>
-                                <button onclick="fmt('underline')" class="tool-btn underline">U</button>
+                                <button onclick="fmt('bold')" class="tool-btn font-bold" title="Bold">B</button>
+                                <button onclick="fmt('italic')" class="tool-btn italic" title="Italic">I</button>
+                                <button onclick="fmt('underline')" class="tool-btn underline" title="Underline">U</button>
+                                <button onclick="fmt('strikeThrough')" class="tool-btn" title="Strikethrough"><s>S</s></button>
                                 <div class="tool-sep"></div>
-                                <button onclick="fmt('insertUnorderedList')" class="tool-btn text-xs">• List</button>
-                                <button onclick="fmt('insertOrderedList')" class="tool-btn text-xs">1. List</button>
-                                <div class="flex-1"></div>
-                                <button onclick="exportNotes()" class="tool-btn text-xs text-brand" title="Download Notulen"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></button>
-                                <span id="saveInd" class="text-[10px] text-gray-400 flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>Tersimpan</span>
+                                <button onclick="fmt('justifyLeft')" class="tool-btn text-xs" title="Rata Kiri">≡←</button>
+                                <button onclick="fmt('justifyCenter')" class="tool-btn text-xs" title="Rata Tengah">≡</button>
+                                <button onclick="fmt('justifyRight')" class="tool-btn text-xs" title="Rata Kanan">≡→</button>
+                                <div class="tool-sep"></div>
+                                <button onclick="fmt('insertUnorderedList')" class="tool-btn text-xs" title="Bullet List">• List</button>
+                                <button onclick="fmt('insertOrderedList')" class="tool-btn text-xs" title="Numbered List">1. List</button>
+                                <div class="hidden sm:block tool-sep"></div>
+                                <button onclick="fmt('formatBlock','<h2>')" class="tool-btn text-xs font-bold" title="Heading">H</button>
+                                <input type="color" id="textColor" value="#000000" class="color-input hidden sm:block" onchange="applyForeColor(this.value)" title="Warna Teks">
                             </div>
-                            <div id="editor" contenteditable="true" data-placeholder="Mulai menulis notulensi..." class="note-editor w-full"></div>
-                            <div class="px-4 py-2 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between text-[10px] text-gray-400"><span id="charCount">0 karakter</span><span id="wordCount">0 kata</span></div>
+                            <div class="flex items-center gap-2 ml-2">
+                                <button onclick="toggleFocusMode()" id="focusModeBtn" class="tool-btn text-xs" title="Mode Fokus"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
+                                <button onclick="exportNotes()" class="tool-btn text-xs text-brand" title="Download Notulen"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></button>
+                                <span id="saveInd" class="text-[10px] text-gray-400 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>Tersimpan</span>
+                            </div>
                         </div>
-                    </div>
-                    <div id="viewerMode" class="hidden">
-                        <div class="card overflow-hidden">
-                            <div class="px-4 py-2.5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between"><div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg><span class="text-xs font-medium text-gray-700">Mode Peserta</span></div><div class="flex items-center gap-1.5"><div class="live-dot"></div><span class="text-[10px] text-emerald-600 font-medium">Realtime</span></div></div>
-                            <div class="p-4"><div id="viewerNotes" class="note-editor text-sm min-h-[250px] cursor-default"></div></div>
+                        <div id="editor" contenteditable="true" data-placeholder="Ketik notulensi di sini..." class="note-editor w-full"></div>
+                        <div class="px-4 py-2 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between text-[10px] text-gray-400">
+                            <span id="charCount">0 karakter</span>
+                            <span id="wordCount">0 kata</span>
                         </div>
                     </div>
                 </div>
-                <div class="lg:col-span-1 space-y-4">
-                    <div class="card p-4">
-                        <h3 class="text-xs font-semibold text-gray-900 mb-3">Info Rapat</h3>
-                        <div class="space-y-2.5 text-xs">
-                            <div><span class="text-muted block mb-0.5">Notulen</span><p id="rNotulen" class="font-medium text-gray-900"></p></div>
-                            <div><span class="text-muted block mb-0.5">Jenis</span><p id="rType" class="font-medium text-gray-900"></p></div>
-                            <div><span class="text-muted block mb-0.5">Lokasi</span><p id="rLoc" class="font-medium text-gray-900"></p></div>
-                            <div><span class="text-muted block mb-0.5">Mulai</span><p id="rStart" class="font-medium text-gray-900"></p></div>
-                            <div id="rAgendaBlock" class="pt-2.5 border-t border-gray-100"><span class="text-muted block mb-0.5">Agenda</span><p id="rAgenda" class="font-medium text-gray-700 leading-relaxed"></p></div>
+                <div id="viewerMode" class="hidden flex-col h-full">
+                    <div class="card overflow-hidden h-full flex flex-col">
+                        <div class="px-4 py-2.5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between flex-shrink-0">
+                            <div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg><span class="text-xs font-medium text-gray-700">Mode Peserta</span></div>
+                            <div class="flex items-center gap-1.5"><div class="live-dot"></div><span class="text-[10px] text-emerald-600 font-medium">Realtime</span></div>
                         </div>
-                        <button onclick="copyRoomInfo()" class="btn btn-outline btn-full btn-sm mt-3"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>Salin Info Rapat</button>
+                        <div class="p-5 flex-1 overflow-y-auto"><div id="viewerNotes" class="note-editor text-sm cursor-default !bg-transparent"></div></div>
                     </div>
-                    <div class="card p-4">
-                        <h3 class="text-xs font-semibold text-gray-900 mb-3">Peserta (<span id="rPCount">0</span>)</h3>
-                        <div id="rPList" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
+                </div>
+            </div>
+            
+            <!-- Sidebar Column (Sticky) -->
+            <div class="lg:col-span-1 space-y-4 sidebar-col">
+                <div class="card p-4 sticky top-20">
+                    <h3 class="text-xs font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Info Rapat
+                    </h3>
+                    <div class="space-y-3 text-xs">
+                        <div class="grid grid-cols-2 gap-2"><span class="text-muted">Notulen</span><p id="rNotulen" class="font-semibold text-gray-900 text-right truncate"></p></div>
+                        <div class="grid grid-cols-2 gap-2"><span class="text-muted">Jenis</span><p id="rType" class="font-semibold text-gray-900 text-right"></p></div>
+                        <div class="grid grid-cols-2 gap-2"><span class="text-muted">Lokasi</span><p id="rLoc" class="font-semibold text-gray-900 text-right truncate"></p></div>
+                        <div class="grid grid-cols-2 gap-2"><span class="text-muted">Mulai</span><p id="rStart" class="font-semibold text-gray-900 text-right text-[10px]"></p></div>
+                        <div id="rAgendaBlock" class="pt-2 border-t border-gray-100"><span class="text-muted block mb-1">Agenda</span><p id="rAgenda" class="font-medium text-gray-700 text-[11px] leading-relaxed"></p></div>
                     </div>
-                    <div id="rExportBox" class="hidden card p-4">
-                        <h3 class="text-xs font-semibold text-gray-900 mb-2.5">Daftar Hadir</h3>
-                        <button onclick="exportCSV()" class="btn btn-outline btn-full btn-sm"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Export CSV</button>
-                    </div>
+                    <button onclick="copyRoomInfo()" class="btn btn-outline btn-full btn-sm mt-4"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>Salin Info</button>
+                </div>
+                <div class="card p-4 sticky top-[320px]">
+                    <h3 class="text-xs font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        Peserta (<span id="rPCount">0</span>)
+                    </h3>
+                    <div id="rPList" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
+                </div>
+                <div id="rExportBox" class="hidden card p-4 sticky top-[500px]">
+                    <h3 class="text-xs font-bold text-gray-900 mb-2">Daftar Hadir</h3>
+                    <button onclick="exportCSV()" class="btn btn-outline btn-full btn-sm"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Export CSV</button>
                 </div>
             </div>
         </div>
@@ -545,14 +575,12 @@
         let roomsCache=[];
         let pendingPinRoom=null;
         let hasUnsaved=false, lastSavedContent='';
-        
-        // New State for Filters & Calendar
         let currentStatusFilter = 'all';
         let currentRoleFilter = 'all';
         let currentCalendarDate = new Date();
         let selectedCalendarDate = null;
+        let isFocusMode = false;
 
-        // Templates Data
         const templates = {
             'bimbingan': { type:'bimbingan_skripsi', title:'Bimbingan Skripsi', agenda:'1. Tinjauan Bab Pendahuluan\n2. Evaluasi Metodologi\n3. Revisi Data & Analisis\n4. Jadwal Bimbingan Lanjutan' },
             'prodi': { type:'rapat_prodi', title:'Rapat Koordinasi Program Studi', agenda:'1. Evaluasi KBM Semester Ini\n2. Penjadwalan UAS\n3. Akreditasi Prodi\n4. Masalah Kemahasiswaan' },
@@ -587,7 +615,42 @@
 
         // ===================== RICH TEXT FUNCTIONS =====================
         function fmt(cmd, value=null) { document.execCommand(cmd, false, value); document.getElementById('editor').focus(); }
-        function applyFontSize(val) { if(!val) return; document.execCommand('fontSize', false, val); document.getElementById('fontSizeSelect').value = ''; document.getElementById('editor').focus(); }
+        function applyForeColor(color) { document.execCommand('foreColor', false, color); document.getElementById('editor').focus(); }
+        
+        // NEW: Apply Font Size in Point (pt)
+        function applyFontSizePt(pt) {
+            if(!pt) return;
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            
+            // Wrap selection in span with font-size pt
+            const range = selection.getRangeAt(0);
+            const span = document.createElement('span');
+            span.style.fontSize = pt + 'pt';
+            
+            try {
+                range.surroundContents(span);
+            } catch(e) {
+                // Fallback for complex selections
+                const frag = range.extractContents();
+                span.appendChild(frag);
+                range.insertNode(span);
+            }
+            document.getElementById('editor').focus();
+        }
+
+        // NEW: Focus Mode Toggle
+        function toggleFocusMode() {
+            isFocusMode = !isFocusMode;
+            document.body.classList.toggle('focus-mode', isFocusMode);
+            const btn = document.getElementById('focusModeBtn');
+            if(isFocusMode) {
+                btn.classList.add('bg-brand', 'text-white');
+                toast('Mode Fokus Aktif','info');
+            } else {
+                btn.classList.remove('bg-brand', 'text-white');
+            }
+        }
 
         // ===================== AUTH =====================
         async function handleLogin(){
@@ -726,7 +789,7 @@
             catch(e){toast(e.message,'error');}
         }
 
-        // ===================== DASHBOARD & FILTERS =====================
+        // ===================== DASHBOARD =====================
         function loadDashboard(){loadRooms();loadStats();renderCalendar();}
         async function loadStats(){
             try{const snap=await db.collection('rooms').get();let ac=0,tc=0,tp=0,nc=0;const today=new Date();today.setHours(0,0,0,0);snap.forEach(r=>{const d=r.data();if(d.status==='aktif'){ac++;if(d.participants)tp+=d.participants.length;if(d.notes&&d.notes.length>0)nc++;}if(d.createdAt&&d.createdAt.toDate()>=today)tc++;});document.getElementById('statActive').textContent=ac;document.getElementById('statToday').textContent=tc;document.getElementById('statParticipants').textContent=tp;document.getElementById('statNotes').textContent=nc;}
@@ -747,7 +810,7 @@
                     addActivityItem(`Rapat "${d.title}" ${d.status==='aktif'?'dimulai':'berakhir'}.`, d.createdAt);
                 });
                 renderRooms();
-                renderCalendar(); // Update calendar dots
+                renderCalendar();
             },err=>{console.error(err);});
         }
         
@@ -767,14 +830,9 @@
 
         function renderRooms(){
             const tm={rapat_dosen:'Rapat Dosen',bimbingan_skripsi:'Bimbingan Skripsi',rapat_prodi:'Rapat Prodi',rapat_fakultas:'Rapat Fakultas',riset_pengabdian:'Riset & Pengabdian',koordinasi_akademik:'Koordinasi Akademik',lainnya:'Lainnya'};
-            
-            // Apply Filters
             let filtered = roomsCache.filter(r => {
-                // Search
                 if(searchQuery && !(r.title||'').toLowerCase().includes(searchQuery)) return false;
-                // Status
                 if(currentStatusFilter !== 'all' && r.status !== currentStatusFilter) return false;
-                // Role
                 if(currentRoleFilter === 'notulen' && r.notulen_id !== currentUser?.uid) return false;
                 if(currentRoleFilter === 'peserta' && !(r.participants && r.participants.includes(currentUser?.uid))) return false;
                 return true;
@@ -785,7 +843,6 @@
             const act = filtered.filter(r=>r.status==='aktif' && !pinnedIds.includes(r.id));
             const rec = filtered.filter(r=>r.status!=='aktif');
 
-            // Pinned
             const pinnedSection = document.getElementById('pinnedSection');
             const pinnedList = document.getElementById('pinnedRoomsList');
             if(pinned.length > 0){
@@ -793,12 +850,10 @@
                 pinnedList.innerHTML = pinned.map(r => renderRoomCard(r, tm, true)).join('');
             } else { pinnedSection.classList.add('hidden'); }
 
-            // Active
             const al=document.getElementById('activeRoomsList');
             const acEl=document.getElementById('activeCount');if(acEl)acEl.textContent=act.length;
             al.innerHTML = act.length ? act.map(r => renderRoomCard(r, tm, false)).join('') : '<div class="col-span-full empty-state"><p>Tidak ada rapat aktif lainnya</p></div>';
 
-            // Recent
             const rl=document.getElementById('recentRoomsList');
             const rcEl=document.getElementById('recentCount');if(rcEl)rcEl.textContent=rec.length;
             rl.innerHTML=rec.length?rec.map(r=>{
@@ -841,7 +896,6 @@
             </div>`;
         }
 
-        // Activity Feed
         function addActivityItem(text, timestamp) {
             const feed = document.getElementById('activityFeed');
             const timeStr = timestamp ? fmtT(timestamp) : 'Baru saja';
@@ -853,7 +907,6 @@
             if(feed.children.length > 20) feed.removeChild(feed.lastChild);
         }
 
-        // ===================== CALENDAR =====================
         function changeMonth(delta){
             currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
             renderCalendar();
@@ -864,39 +917,26 @@
             const eventsDiv = document.getElementById('calendarEvents');
             grid.innerHTML = '';
             eventsDiv.innerHTML = '';
-            
             const now = new Date();
             const year = currentCalendarDate.getFullYear();
             const month = currentCalendarDate.getMonth();
             const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
             label.textContent = `${monthNames[month]} ${year}`;
-
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const startDay = firstDay === 0 ? 6 : firstDay - 1; // Monday start
-
-            // Get events for this month
+            const startDay = firstDay === 0 ? 6 : firstDay - 1; 
             const monthEvents = roomsCache.filter(r => {
                 const d = r.createdAt?.toDate();
                 return d && d.getMonth() === month && d.getFullYear() === year;
             });
-
-            // Render empty slots
-            for(let i=0; i<startDay; i++) {
-                grid.innerHTML += `<div></div>`;
-            }
-
-            // Render days
+            for(let i=0; i<startDay; i++) grid.innerHTML += `<div></div>`;
             for(let d=1; d<=daysInMonth; d++){
                 const isToday = (d === now.getDate() && month === now.getMonth() && year === now.getFullYear());
                 const hasEvent = monthEvents.some(r => r.createdAt?.toDate().getDate() === d);
                 const isSelected = selectedCalendarDate && selectedCalendarDate.getDate() === d && selectedCalendarDate.getMonth() === month;
-                
                 const className = `calendar-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''} ${isSelected ? 'selected' : ''}`;
                 grid.innerHTML += `<div class="${className}" onclick="selectCalendarDate(${year},${month},${d})">${d}</div>`;
             }
-
-            // Show events for selected date or today
             const targetDate = selectedCalendarDate || now;
             if(targetDate.getMonth() === month && targetDate.getFullYear() === year){
                 const dayEvents = monthEvents.filter(r => r.createdAt?.toDate().getDate() === targetDate.getDate());
@@ -919,15 +959,12 @@
             renderCalendar();
         }
 
-        // ===================== REPORT GENERATION =====================
         function generateReport(){
             const now = new Date();
             const monthName = now.toLocaleString('id-ID', { month: 'long' });
             const year = now.getFullYear();
             const userRooms = roomsCache.filter(r => r.status === 'selesai' && (r.notulen_id === currentUser?.uid || (r.participants && r.participants.includes(currentUser?.uid))) && r.createdAt?.toDate().getMonth() === now.getMonth());
-
             if(userRooms.length === 0) return toast('Tidak ada riwayat rapat bulan ini','warning');
-
             const content = `
                 <div style="font-family: sans-serif; padding: 20px; color: #111827;">
                     <h1 style="font-size: 24px; margin-bottom: 5px;">Laporan Rapat Bulan ${monthName} ${year}</h1>
@@ -943,71 +980,36 @@
                             </tr>
                         </thead>
                         <tbody>
-                            ${userRooms.map(r => `
-                                <tr>
-                                    <td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-weight: 500;">${r.title}</td>
-                                    <td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${fmtD(r.createdAt)}</td>
-                                    <td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${r.notulen_id === currentUser?.uid ? 'Notulen' : 'Peserta'}</td>
-                                    <td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${(r.participants?.length || 0) + 1} orang</td>
-                                </tr>
-                            `).join('')}
+                            ${userRooms.map(r => `<tr><td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-weight: 500;">${r.title}</td><td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${fmtD(r.createdAt)}</td><td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${r.notulen_id === currentUser?.uid ? 'Notulen' : 'Peserta'}</td><td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${(r.participants?.length || 0) + 1} orang</td></tr>`).join('')}
                         </tbody>
                     </table>
-                    <div style="margin-top: 40px; text-align: right; color: #6b7280; font-size: 10px;">
-                        <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
-                        <p>ERapatUnsam - Universitas Samudra</p>
-                    </div>
-                </div>
-            `;
-
-            const opt = {
-                margin: 10,
-                filename: `Laporan_Rapat_${monthName}_${year}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            // Create temp element
+                </div>`;
+            const opt = { margin: 10, filename: `Laporan_Rapat_${monthName}_${year}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = content;
             document.body.appendChild(tempDiv);
-            tempDiv.style.position = 'absolute';
-            tempDiv.style.left = '-9999px';
-
-            html2pdf().set(opt).from(tempDiv).save().then(() => {
-                document.body.removeChild(tempDiv);
-                toast('Laporan berhasil diunduh!','success');
-            });
+            tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px';
+            html2pdf().set(opt).from(tempDiv).save().then(() => { document.body.removeChild(tempDiv); toast('Laporan berhasil diunduh!','success'); });
         }
 
-        // ===================== ROOM DETAIL =====================
         function showRoomDetail(roomId){
             const r=roomsCache.find(x=>x.id===roomId);
             if(!r)return;
             const tm={rapat_dosen:'Rapat Dosen',bimbingan_skripsi:'Bimbingan Skripsi',rapat_prodi:'Rapat Prodi',rapat_fakultas:'Rapat Fakultas',riset_pengabdian:'Riset & Pengabdian',koordinasi_akademik:'Koordinasi Akademik',lainnya:'Lainnya'};
             document.getElementById('rdContent').innerHTML=`
-                <div class="text-center mb-5">
-                    <h3 class="text-lg font-semibold text-gray-900">${r.title||'Rapat'}</h3>
-                    <span class="badge badge-blue mt-2">${tm[r.jenis_rapat]||'Umum'}</span>
-                </div>
+                <div class="text-center mb-5"><h3 class="text-lg font-semibold text-gray-900">${r.title||'Rapat'}</h3><span class="badge badge-blue mt-2">${tm[r.jenis_rapat]||'Umum'}</span></div>
                 <div class="space-y-3 text-sm mb-5">
                     <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-muted">Notulen</span><span class="font-medium text-gray-900">${r.notulen_name||'-'}</span></div>
                     <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-muted">Lokasi</span><span class="font-medium text-gray-900">${r.lokasi||'-'}</span></div>
-                    <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-muted">Peserta</span><span class="font-medium text-gray-900">${(r.participants?.length||0)+1} orang</span></div>
                     <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-muted">Mulai</span><span class="font-medium text-gray-900">${fmtFull(r.createdAt)}</span></div>
                     ${r.agenda?`<div class="py-2"><span class="text-muted block mb-1">Agenda</span><p class="text-gray-700 text-xs leading-relaxed">${r.agenda}</p></div>`:''}
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="hideRoomDetail()" class="btn btn-outline flex-1 btn-sm">Tutup</button>
-                    <button onclick="hideRoomDetail();openPinModal('${r.id}')" class="btn btn-primary flex-1 btn-sm">Masukkan PIN</button>
-                </div>`;
+                <div class="flex gap-3"><button onclick="hideRoomDetail()" class="btn btn-outline flex-1 btn-sm">Tutup</button><button onclick="hideRoomDetail();openPinModal('${r.id}')" class="btn btn-primary flex-1 btn-sm">Masukkan PIN</button></div>`;
             document.getElementById('roomDetailModal').classList.remove('hidden');
             document.getElementById('roomDetailModal').classList.add('flex');
         }
         function hideRoomDetail(){document.getElementById('roomDetailModal').classList.add('hidden');document.getElementById('roomDetailModal').classList.remove('flex');}
 
-        // ===================== PIN MODAL =====================
         function openPinModal(roomId){
             pendingPinRoom=roomId;
             document.getElementById('pinModal').classList.remove('hidden');document.getElementById('pinModal').classList.add('flex');
@@ -1030,7 +1032,6 @@
             setLoad('pinBtnText','pinSpinner',false);
         }
 
-        // ===================== CREATE MODAL & TEMPLATES =====================
         function openCreateModal(){
             document.getElementById('createModal').classList.remove('hidden');document.getElementById('createModal').classList.add('flex');
             document.getElementById('cTitle').value='';document.getElementById('cAgenda').value='';document.getElementById('cLoc').value='';
@@ -1056,7 +1057,6 @@
             setLoad('cBtnText','cSpinner',false);
         }
 
-        // ===================== EDIT/DELETE ROOM =====================
         function showEditRoomModal(){
             if(!currentRoomId || !isNotulen) return;
             const doc=roomsCache.find(r=>r.id===currentRoomId);
@@ -1119,6 +1119,12 @@
             document.getElementById('rStart').textContent=fmtFull(r.createdAt);document.getElementById('rAgenda').textContent=r.agenda||'-';
             document.getElementById('rAgendaBlock').classList.toggle('hidden',!r.agenda);document.getElementById('rTimer').textContent='00:00:00';document.getElementById('rDuration').textContent='';
             window._meetStart=r.createdAt.toDate().getTime();if(timerInterval)clearInterval(timerInterval);timerInterval=setInterval(updateTimer,1000);updateTimer();
+            
+            // Reset Focus Mode on enter
+            isFocusMode = false;
+            document.body.classList.remove('focus-mode');
+            document.getElementById('focusModeBtn').classList.remove('bg-brand', 'text-white');
+
             document.getElementById('rEditBtn').classList.toggle('hidden', !isNotulen);
             
             if(isNotulen){
@@ -1226,4 +1232,3 @@
     </script>
 </body>
 </html>
-
