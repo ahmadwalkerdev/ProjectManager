@@ -40,9 +40,10 @@
         .toast.success { background:#111827; color:#fff; }
         .toast.error { background:#ef4444; color:#fff; }
         .toast.info { background:#2563eb; color:#fff; }
+        .toast.warning { background:#f59e0b; color:#fff; }
         @keyframes toastIn { from{transform:translateY(-20px);opacity:0} to{transform:translateY(0);opacity:1} }
         @keyframes toastOut { from{transform:translateY(0);opacity:1} to{transform:translateY(-20px);opacity:0} }
-        .modal-overlay { background:rgba(0,0,0,0.3); backdrop-filter:blur(4px); }
+        .modal-overlay { background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); }
         .bottom-sheet { border-radius:20px 20px 0 0; }
         @media(min-width:640px) { .bottom-sheet { border-radius:20px; } }
         .spinner { border:2px solid #e5e7eb; border-top-color:#2563eb; border-radius:50%; width:16px; height:16px; animation: spin 0.6s linear infinite; display:inline-block; }
@@ -57,6 +58,7 @@
         .tool-sep { width:1px; height:20px; background:#e5e7eb; margin:0 4px; }
         .note-editor { padding:28px 36px; outline:none; line-height:1.75; color:#1f2937; font-family:'Inter',sans-serif; font-size:15px; flex:1; overflow-y:auto; caret-color:#2563eb; }
         .note-editor:empty::before { content:attr(data-placeholder); color:#9ca3af; font-style:italic; pointer-events:none; }
+        .note-editor img { max-width:100%; height:auto; border-radius:8px; margin:8px 0; display:block; }
         .note-editor a { color:#2563eb; text-decoration:underline; font-weight:500; }
         .note-editor h1 { font-size:28px; font-weight:700; margin:20px 0 10px; }
         .note-editor h2 { font-size:22px; font-weight:600; margin:16px 0 8px; }
@@ -71,8 +73,6 @@
             transition: outline 0.2s;
         }
         .note-editor.transform-active img:active { cursor: grabbing; }
-        
-        /* Resize Handle (Pojok Kanan Bawah) */
         .note-editor.transform-active img::after {
             content: '';
             position: absolute; bottom: -6px; right: -6px;
@@ -83,6 +83,53 @@
             z-index: 10;
         }
 
+        /* ===== ATTACHMENT STYLES ===== */
+        .attachment-section { margin-top:20px; padding-top:20px; border-top:1px solid #e5e7eb; }
+        .attachment-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+        .attachment-title { font-size:13px; font-weight:600; color:#111827; display:flex; align-items:center; gap:6px; }
+        .attachment-title svg { width:16px; height:16px; }
+        
+        /* Thumbnail Grid */
+        .thumbnail-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:10px; }
+        .thumbnail-item { position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; cursor:pointer; border:2px solid #e5e7eb; transition:all 0.2s; background:#f9fafb; }
+        .thumbnail-item:hover { border-color:#2563eb; transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+        .thumbnail-item img { width:100%; height:100%; object-fit:cover; }
+        .thumbnail-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; }
+        .thumbnail-item:hover .thumbnail-overlay { opacity:1; }
+        .thumbnail-overlay svg { width:20px; height:20px; color:#fff; }
+        .thumbnail-delete { position:absolute; top:4px; right:4px; width:20px; height:20px; background:#ef4444; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; opacity:0; transition:opacity 0.2s; }
+        .thumbnail-item:hover .thumbnail-delete { opacity:1; }
+        
+        /* Document List */
+        .doc-list { display:flex; flex-direction:column; gap:8px; }
+        .doc-item { display:flex; align-items:center; gap:10px; padding:10px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb; transition:all 0.2s; }
+        .doc-item:hover { background:#f3f4f6; border-color:#d1d5db; }
+        .doc-icon { width:36px; height:36px; background:#fff; border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .doc-icon.pdf { color:#ef4444; background:#fef2f2; }
+        .doc-icon.word { color:#3b82f6; background:#eff6ff; }
+        .doc-icon.excel { color:#10b981; background:#ecfdf5; }
+        .doc-icon.ppt { color:#f59e0b; background:#fffbeb; }
+        .doc-icon.image { color:#8b5cf6; background:#f5f3ff; }
+        .doc-icon svg { width:18px; height:18px; }
+        .doc-info { flex:1; min-width:0; }
+        .doc-name { font-weight:600; color:#111827; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .doc-meta { font-size:10px; color:#6b7280; margin-top:2px; }
+        .doc-actions { display:flex; gap:6px; }
+        .doc-btn { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; }
+        .doc-btn-primary { background:#2563eb; color:#fff; }
+        .doc-btn-primary:hover { background:#1d4ed8; }
+        .doc-btn-danger { background:#ef4444; color:#fff; }
+        .doc-btn-danger:hover { background:#dc2626; }
+        
+        /* Image Preview Modal */
+        .image-preview-modal { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.9); backdrop-filter:blur(8px); align-items:center; justify-content:center; }
+        .image-preview-modal.active { display:flex; }
+        .image-preview-content { position:relative; max-width:95vw; max-height:95vh; }
+        .image-preview-content img { max-width:100%; max-height:90vh; object-fit:contain; border-radius:8px; box-shadow:0 20px 40px rgba(0,0,0,0.3); }
+        .image-preview-close { position:absolute; top:-50px; right:0; background:#fff; color:#111827; border:none; width:44px; height:44px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; transition:all 0.2s; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
+        .image-preview-close:hover { background:#f3f4f6; transform:rotate(90deg); }
+        .image-preview-caption { position:absolute; bottom:-40px; left:0; right:0; text-align:center; color:#fff; font-size:13px; font-weight:500; text-shadow:0 1px 3px rgba(0,0,0,0.5); }
+        
         .color-popover { display:none; position:absolute; top:44px; background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:10px; box-shadow:0 10px 25px -5px rgba(0,0,0,0.15); z-index:20; width:150px; }
         .color-popover.active { display:block; animation:scaleIn 0.15s; }
         .color-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
@@ -95,6 +142,7 @@
         .badge { display:inline-flex; align-items:center; padding:3px 8px; border-radius:20px; font-size:11px; font-weight:600; }
         .badge-blue { background:#eff6ff; color:#2563eb; }
         .badge-green { background:#ecfdf5; color:#059669; }
+        .badge-gray { background:#f3f4f6; color:#6b7280; }
         .live-dot { width:6px; height:6px; border-radius:50%; background:#10b981; display:inline-block; animation:livePulse 2s infinite; }
         @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
         .input { width:100%; padding:10px 14px; border:1.5px solid #e5e7eb; border-radius:12px; background:#fff; font-size:14px; transition:all 0.15s; }
@@ -107,10 +155,22 @@
         .btn-outline { background:#fff; color:#374151; border:1.5px solid #e5e7eb; } .btn-outline:hover { background:#f9fafb; border-color:#d1d5db; }
         .btn-red { background:#ef4444; color:#fff; } .btn-red:hover { background:#dc2626; }
         .btn-sm { padding:7px 14px; font-size:13px; border-radius:10px; }
+        .btn-full { width:100%; }
     </style>
 </head>
 <body>
     <div id="toastContainer"></div>
+    
+    <!-- Image Preview Modal -->
+    <div id="imagePreviewModal" class="image-preview-modal" onclick="closeImagePreview(event)">
+        <div class="image-preview-content" onclick="event.stopPropagation()">
+            <button class="image-preview-close" onclick="closeImagePreview()">×</button>
+            <img id="previewImage" src="" alt="Preview">
+            <div class="image-preview-caption" id="previewCaption"></div>
+        </div>
+    </div>
+
+    <!-- ============ AUTH ============ -->
     <div id="authView" class="view active min-h-screen items-center justify-center p-5" style="background:#fff;">
         <div class="w-full max-w-[400px] fade-up">
             <div class="text-center mb-10">
@@ -148,6 +208,7 @@
         </div>
     </div>
 
+    <!-- ============ DASHBOARD ============ -->
     <div id="dashboardView" class="view min-h-screen flex-col bg-surface">
         <nav class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
@@ -204,6 +265,7 @@
         </main>
     </div>
 
+    <!-- ============ SETTINGS ============ -->
     <div id="settingsView" class="view min-h-screen flex-col bg-surface">
         <nav class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between"><div class="flex items-center gap-3"><button onclick="backToDashboard()" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button><h1 class="font-bold text-gray-900 text-lg">Pengaturan Akun</h1></div><button onclick="backToDashboard()" class="btn btn-ghost btn-sm">Kembali</button></div></nav>
         <main class="flex-1 max-w-6xl mx-auto w-full px-6 py-8">
@@ -252,16 +314,22 @@
         </main>
     </div>
 
+    <!-- ============ DELETE ACCOUNT MODAL ============ -->
     <div id="deleteModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4"><div class="modal-overlay absolute inset-0" onclick="hideDeleteModal()"></div><div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 scale-in text-center"><div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6"><svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div><h3 class="text-xl font-bold text-gray-900 mb-2">Hapus Akun?</h3><p class="text-sm text-gray-500 mb-6">Ketik email untuk konfirmasi</p><input id="delEmail" type="email" placeholder="Email Anda" class="input mb-6"><div class="flex gap-3"><button onclick="hideDeleteModal()" class="flex-1 btn btn-outline btn-sm">Batal</button><button onclick="confirmDelete()" class="flex-1 btn btn-red btn-sm">Hapus</button></div></div></div>
 
+    <!-- ============ PIN MODAL ============ -->
     <div id="pinModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="hidePinModal()"></div><div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-8 slide-up bottom-sheet"><div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8 sm:hidden"></div><button onclick="hidePinModal()" class="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button><div class="text-center mb-8"><div class="w-16 h-16 bg-brand/10 rounded-2xl flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div><h3 class="text-xl font-bold text-gray-900">Masukkan PIN</h3><p class="text-sm text-gray-500 mt-2">Dapatkan PIN dari notulen</p></div><div class="flex justify-center gap-3 mb-8"><input id="p0" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(0)" onkeydown="pinKey(event,0)"><input id="p1" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(1)" onkeydown="pinKey(event,1)"><input id="p2" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(2)" onkeydown="pinKey(event,2)"><input id="p3" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(3)" onkeydown="pinKey(event,3)"><input id="p4" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(4)" onkeydown="pinKey(event,4)"><input id="p5" class="pin-digit" maxlength="1" inputmode="numeric" oninput="pinInput(5)" onkeydown="pinKey(event,5)"></div><button onclick="submitPin()" class="btn btn-primary btn-full shadow-lg shadow-brand/20"><span id="pinBtnText">Masuk Rapat</span><div id="pinSpinner" class="spinner hidden" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button><div id="pinError" class="mt-4 text-center text-red-500 text-xs font-medium hidden"></div></div></div>
 
+    <!-- ============ CREATE MODAL ============ -->
     <div id="createModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="hideCreateModal()"></div><div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-8 slide-up bottom-sheet max-h-[90vh] overflow-y-auto"><div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8 sm:hidden"></div><button onclick="hideCreateModal()" class="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button><div class="text-center mb-8"><div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div><h3 class="text-xl font-bold text-gray-900">Buat Rapat Baru</h3><p class="text-sm text-gray-500 mt-2">Anda akan menjadi notulen</p></div><div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100"><p class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">⚡ Template Cepat</p><div class="grid grid-cols-3 gap-3"><button onclick="applyTemplate('bimbingan')" class="text-[11px] font-medium bg-white border border-gray-200 hover:border-brand hover:text-brand rounded-lg py-2.5 transition-all shadow-sm">Bimbingan Skripsi</button><button onclick="applyTemplate('prodi')" class="text-[11px] font-medium bg-white border border-gray-200 hover:border-brand hover:text-brand rounded-lg py-2.5 transition-all shadow-sm">Rapat Prodi</button><button onclick="applyTemplate('fakultas')" class="text-[11px] font-medium bg-white border border-gray-200 hover:border-brand hover:text-brand rounded-lg py-2.5 transition-all shadow-sm">Rapat Fakultas</button></div></div><div class="space-y-4"><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Judul Rapat</label><input id="cTitle" class="input" placeholder="Contoh: Rapat Koordinasi Prodi"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Jenis</label><select id="cType" class="input"><option value="rapat_dosen">Rapat Dosen</option><option value="bimbingan_skripsi">Bimbingan</option><option value="rapat_prodi">Rapat Prodi</option><option value="rapat_fakultas">Rapat Fakultas</option><option value="riset_pengabdian">Riset</option><option value="lainnya">Lainnya</option></select></div><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Lokasi</label><input id="cLoc" class="input" placeholder="Gedung B Lt.3"></div></div><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Agenda</label><textarea id="cAgenda" rows="3" placeholder="Poin-poin agenda..." class="input resize-none"></textarea></div><button onclick="submitCreate()" class="btn btn-green btn-full shadow-lg shadow-emerald-500/20 mt-2"><span id="cBtnText">Buat & Mulai</span><div id="cSpinner" class="spinner hidden" style="border-top-color:#fff;border-color:rgba(255,255,255,0.3)"></div></button></div></div></div>
 
+    <!-- ============ ROOM DETAIL MODAL ============ -->
     <div id="roomDetailModal" class="hidden fixed inset-0 z-[100] items-end sm:items-center justify-center"><div class="modal-overlay absolute inset-0" onclick="hideRoomDetail()"></div><div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-8 slide-up bottom-sheet"><div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8 sm:hidden"></div><div id="rdContent"></div></div></div>
 
+    <!-- ============ EDIT ROOM MODAL ============ -->
     <div id="editRoomModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4"><div class="modal-overlay absolute inset-0" onclick="hideEditRoomModal()"></div><div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 scale-in"><h3 class="text-lg font-bold text-gray-900 mb-6">Edit Info Rapat</h3><div class="space-y-4"><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Judul</label><input id="editTitle" class="input"></div><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Lokasi</label><input id="editLoc" class="input"></div><div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Agenda</label><textarea id="editAgenda" rows="3" class="input resize-none"></textarea></div><div class="flex gap-3 mt-6"><button onclick="hideEditRoomModal()" class="flex-1 btn btn-outline btn-sm">Batal</button><button onclick="saveEditRoom()" class="flex-1 btn btn-primary btn-sm shadow-lg shadow-brand/20">Simpan</button></div></div></div></div>
 
+    <!-- ============ ROOM VIEW ============ -->
     <div id="roomView" class="view min-h-screen flex-col bg-surface">
         <div class="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
@@ -279,7 +347,9 @@
                 </div>
             </div>
         </div>
+        
         <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6 transition-all" id="roomGrid">
+            <!-- Text Editor Column -->
             <div class="lg:col-span-3 flex flex-col h-full">
                 <div id="notulenMode" class="hidden flex-col h-full">
                     <div class="editor-wrapper">
@@ -302,20 +372,18 @@
                                 <div class="relative"><button onclick="togglePalette('textPalette')" onmousedown="event.preventDefault()" class="tool-btn" title="Warna Teks"><div class="w-4 h-4 rounded-full border border-gray-300 overflow-hidden"><div class="w-full h-full" style="background: linear-gradient(135deg, #ef4444 50%, #3b82f6 50%);"></div></div></button><div id="textPalette" class="color-popover" style="right:0;"><p class="text-[10px] text-gray-400 font-bold mb-2 uppercase tracking-wider">Warna Teks</p><div class="color-grid"><div class="color-dot" style="background:#111827" onclick="applyTextColor('#111827')"></div><div class="color-dot" style="background:#EF4444" onclick="applyTextColor('#EF4444')"></div><div class="color-dot" style="background:#3B82F6" onclick="applyTextColor('#3B82F6')"></div><div class="color-dot" style="background:#10B981" onclick="applyTextColor('#10B981')"></div><div class="color-dot" style="background:#F59E0B" onclick="applyTextColor('#F59E0B')"></div><div class="color-dot" style="background:#6B7280" onclick="applyTextColor('#6B7280')"></div></div></div></div>
                                 <div class="relative"><button onclick="togglePalette('highlightPalette')" onmousedown="event.preventDefault()" class="tool-btn" title="Highlight"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg></button><div id="highlightPalette" class="color-popover" style="right:0;"><p class="text-[10px] text-gray-400 font-bold mb-2 uppercase tracking-wider">Highlight</p><div class="color-grid"><div class="color-dot" style="background:#fef08a" onclick="applyHighlight('#fef08a')"></div><div class="color-dot" style="background:#bbf7d0" onclick="applyHighlight('#bbf7d0')"></div><div class="color-dot" style="background:#bfdbfe" onclick="applyHighlight('#bfdbfe')"></div><div class="color-dot" style="background:#fecaca" onclick="applyHighlight('#fecaca')"></div><div class="color-dot" style="background:#f3f4f6" onclick="applyHighlight('#f3f4f6')"></div><div class="color-dot border border-gray-200" style="background:#fff" onclick="applyHighlight('transparent')"></div></div></div></div>
                                 <div class="tool-sep"></div>
-                                <button onclick="triggerImageUpload()" class="tool-btn" title="Upload Gambar">🖼️</button>
+                                <button onclick="triggerImageUpload()" class="tool-btn" title="Upload Gambar ke Teks">🖼️</button>
                                 <input type="file" id="editorImageInput" class="hidden" accept="image/*" multiple onchange="handleEditorImageUpload(event)">
                                 <button onclick="embedLink()" class="tool-btn" title="Embed Link">🔗</button>
-                                <!-- TRANSFORM MODE TOGGLE -->
                                 <div class="tool-sep"></div>
                                 <button onclick="toggleTransformMode()" id="transformModeBtn" class="tool-btn" title="Transform Mode (Drag/Resize Image)">🔧</button>
                             </div>
                             <div class="flex items-center gap-2 ml-2">
                                 <button onclick="toggleFocusMode()" id="focusModeBtn" class="tool-btn text-xs" title="Mode Fokus" onmousedown="event.preventDefault()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
-                                <button onclick="exportNotes()" onmousedown="event.preventDefault()" class="tool-btn text-xs text-brand" title="Download"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></button>
+                                <button onclick="exportNotes()" onmousedown="event.preventDefault()" class="tool-btn text-xs text-brand" title="Download Notulen"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></button>
                                 <span id="saveInd" class="text-[10px] text-gray-400 font-medium flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-lg"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>Tersimpan</span>
                             </div>
                         </div>
-                        <!-- Added id="editor" for JS targeting -->
                         <div id="editor" contenteditable="true" data-placeholder="Ketik notulensi di sini..." class="note-editor w-full"></div>
                         <div class="px-6 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between text-xs text-gray-400 font-medium"><span id="charCount">0 karakter</span><span id="wordCount">0 kata</span></div>
                     </div>
@@ -327,21 +395,70 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Sidebar: Info, Participants, Attachments -->
             <div class="lg:col-span-1 space-y-4 sidebar-col">
-                <div class="card p-5 sticky top-24"><h3 class="text-xs font-bold text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-wider"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Info Rapat</h3><div class="space-y-4 text-sm"><div class="flex justify-between items-center"><span class="text-muted font-medium">Notulen</span><p id="rNotulen" class="font-bold text-gray-900 text-right truncate max-w-[120px]"></p></div><div class="flex justify-between items-center"><span class="text-muted font-medium">Jenis</span><p id="rType" class="font-bold text-gray-900 text-right"></p></div><div class="flex justify-between items-center"><span class="text-muted font-medium">Lokasi</span><p id="rLoc" class="font-bold text-gray-900 text-right truncate max-w-[120px]"></p></div><div class="flex justify-between items-center"><span class="text-muted font-medium">Mulai</span><p id="rStart" class="font-bold text-gray-900 text-right text-xs"></p></div><div id="rAgendaBlock" class="pt-4 border-t border-gray-100"><span class="text-muted font-medium block mb-2">Agenda</span><p id="rAgenda" class="font-medium text-gray-700 text-xs leading-relaxed bg-gray-50 p-3 rounded-lg"></p></div></div><button onclick="copyRoomInfo()" class="btn btn-outline btn-full btn-sm mt-5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>Salin Info</button></div>
-                <div class="card p-5 sticky top-[400px]"><h3 class="text-xs font-bold text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-wider"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>Peserta (<span id="rPCount">0</span>)</h3><div id="rPList" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div></div>
-                <div id="rDocBox" class="hidden card p-5"><h3 class="text-xs font-bold text-gray-900 mb-3">Dokumen Rapat</h3><div id="docList" class="space-y-2 mb-3 max-h-32 overflow-y-auto text-xs text-muted"></div><label class="btn btn-outline btn-full btn-sm cursor-pointer justify-center"><span>+ Upload Dokumen</span><input type="file" id="docInput" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" onchange="handleDocUpload(event)"></label><p class="text-[9px] text-gray-400 mt-2 text-center">Hanya PDF & MS Office</p></div>
+                <!-- Info Rapat -->
+                <div class="card p-5 sticky top-24">
+                    <h3 class="text-xs font-bold text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-wider"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Info Rapat</h3>
+                    <div class="space-y-4 text-sm">
+                        <div class="flex justify-between items-center"><span class="text-muted font-medium">Notulen</span><p id="rNotulen" class="font-bold text-gray-900 text-right truncate max-w-[120px]"></p></div>
+                        <div class="flex justify-between items-center"><span class="text-muted font-medium">Jenis</span><p id="rType" class="font-bold text-gray-900 text-right"></p></div>
+                        <div class="flex justify-between items-center"><span class="text-muted font-medium">Lokasi</span><p id="rLoc" class="font-bold text-gray-900 text-right truncate max-w-[120px]"></p></div>
+                        <div class="flex justify-between items-center"><span class="text-muted font-medium">Mulai</span><p id="rStart" class="font-bold text-gray-900 text-right text-xs"></p></div>
+                        <div id="rAgendaBlock" class="pt-4 border-t border-gray-100"><span class="text-muted font-medium block mb-2">Agenda</span><p id="rAgenda" class="font-medium text-gray-700 text-xs leading-relaxed bg-gray-50 p-3 rounded-lg"></p></div>
+                    </div>
+                    <button onclick="copyRoomInfo()" class="btn btn-outline btn-full btn-sm mt-5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>Salin Info</button>
+                </div>
+                
+                <!-- Peserta -->
+                <div class="card p-5 sticky top-[400px]">
+                    <h3 class="text-xs font-bold text-gray-900 mb-4 flex items-center gap-2 uppercase tracking-wider"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>Peserta (<span id="rPCount">0</span>)</h3>
+                    <div id="rPList" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+                </div>
+                
+                <!-- Lampiran Gambar -->
+                <div class="card p-5">
+                    <div class="attachment-header">
+                        <h3 class="attachment-title"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>Lampiran Gambar</h3>
+                        <label class="cursor-pointer btn btn-outline btn-sm">
+                            <span>+ Upload</span>
+                            <input type="file" id="imageAttachmentInput" class="hidden" accept="image/*" multiple onchange="handleImageAttachmentUpload(event)">
+                        </label>
+                    </div>
+                    <div id="imageAttachmentsGrid" class="thumbnail-grid">
+                        <p class="text-xs text-muted col-span-full text-center py-4">Belum ada gambar</p>
+                    </div>
+                </div>
+                
+                <!-- Lampiran Dokumen -->
+                <div class="card p-5">
+                    <div class="attachment-header">
+                        <h3 class="attachment-title"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Lampiran Dokumen</h3>
+                        <label class="cursor-pointer btn btn-outline btn-sm">
+                            <span>+ Upload</span>
+                            <input type="file" id="docAttachmentInput" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple onchange="handleDocAttachmentUpload(event)">
+                        </label>
+                    </div>
+                    <div id="docAttachmentsList" class="doc-list">
+                        <p class="text-xs text-muted text-center py-4">Belum ada dokumen</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- ============ DELETE ROOM MODAL ============ -->
     <div id="deleteRoomModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4"><div class="modal-overlay absolute inset-0" onclick="hideDeleteRoomModal()"></div><div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 scale-in text-center"><div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6"><svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></div><h3 class="text-xl font-bold text-gray-900 mb-2">Hapus Rapat?</h3><p class="text-sm text-gray-500 mb-6">Rapat "<span id="deleteRoomTitle" class="font-bold text-gray-900"></span>" akan dihapus permanen.</p><div class="flex gap-3"><button onclick="hideDeleteRoomModal()" class="flex-1 btn btn-outline btn-sm">Batal</button><button onclick="confirmDeleteRoom()" class="flex-1 btn btn-red btn-sm">Hapus</button></div></div></div>
 
+    <!-- ============ LEAVE MODAL ============ -->
     <div id="leaveModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4"><div class="modal-overlay absolute inset-0" onclick="hideLeaveModal()"></div><div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 scale-in text-center"><div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6"><svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div><h3 class="text-xl font-bold text-gray-900 mb-2">Keluar Rapat?</h3><p id="leaveMsg" class="text-sm text-gray-500 mb-6">Perubahan notulensi akan tersimpan otomatis.</p><div class="flex gap-3"><button onclick="hideLeaveModal()" class="flex-1 btn btn-outline btn-sm">Batal</button><button onclick="confirmLeave()" class="flex-1 btn btn-primary btn-sm shadow-lg shadow-brand/20">Keluar</button></div></div></div>
 
+    <!-- ============ END MODAL ============ -->
     <div id="endModal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4"><div class="modal-overlay absolute inset-0" onclick="hideEndModal()"></div><div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 scale-in text-center"><div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6"><svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div><h3 class="text-xl font-bold text-gray-900 mb-2">Akhiri Rapat?</h3><p class="text-sm text-gray-500 mb-6">Notulensi akan tersimpan.</p><div class="flex gap-3"><button onclick="hideEndModal()" class="flex-1 btn btn-outline btn-sm">Batal</button><button onclick="confirmEnd()" class="flex-1 btn btn-red btn-sm">Akhiri</button></div></div></div>
 
     <script>
+        // ===================== CONFIGURATIONS =====================
         const firebaseConfig = {
             apiKey:"AIzaSyCBNXmBtTQrPmtZMMuc-x9NVSF16tXT-0U",
             authDomain:"erapatunsam-8c240.firebaseapp.com",
@@ -361,8 +478,9 @@
         let supabaseClient = null;
         try { if (typeof window.supabase !== 'undefined') supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch (err) { console.error("Supabase Init Error:", err); }
 
+        // ===================== STATE =====================
         let currentUser=null, currentRoomId=null, isNotulen=false;
-        let unsubRoom=null, unsubAtt=null, unsubDocs=null;
+        let unsubRoom=null, unsubAtt=null, unsubDocs=null, unsubImages=null, unsubAttachments=null;
         let saveTimer=null, timerInterval=null;
         let activeFilter='all', searchQuery='';
         let roomsCache=[];
@@ -387,6 +505,7 @@
             'fakultas': { type:'rapat_fakultas', title:'Rapat Senat Fakultas', agenda:'1. Laporan Dekan\n2. Evaluasi Kinerja Dosen\n3. Anggaran Fakultas\n4. Kebijakan Akademik' }
         };
 
+        // ===================== UTILS =====================
         function toast(msg, type='success') {
             const c=document.getElementById('toastContainer');
             const t=document.createElement('div');
@@ -405,10 +524,13 @@
             if(!window._meetStart)return;
             const d=Math.floor((Date.now()-window._meetStart)/1000);
             document.getElementById('rTimer').textContent=[Math.floor(d/3600),Math.floor((d%3600)/60),d%60].map(x=>String(x).padStart(2,'0')).join(':');
-            document.getElementById('rDuration').textContent=`${Math.floor(d/3600)}j ${Math.floor((d%3600)/60)}m`;
+            const h=Math.floor(d/3600),m=Math.floor((d%3600)/60);
+            document.getElementById('rDuration').textContent=h>0?`${h}j ${m}m`:`${m}m`;
         }
 
+        // ===================== EDITOR FUNCTIONS =====================
         function fmt(cmd, value=null) { document.execCommand(cmd, false, value); document.getElementById('editor').focus(); }
+        
         function togglePalette(id) {
             document.querySelectorAll('.color-popover').forEach(p => { if(p.id !== id) p.classList.remove('active'); });
             const el = document.getElementById(id); if(el) el.classList.toggle('active');
@@ -449,26 +571,17 @@
                 }catch(e){document.getElementById('saveInd').innerHTML='<span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span> Gagal';}
             },800);
         }
-        
         function insertHtmlAtCursor(html) {
-            const editor = document.getElementById('editor');
-            editor.focus();
+            const editor = document.getElementById('editor'); editor.focus();
             const sel = window.getSelection();
             if (sel.rangeCount) {
-                const range = sel.getRangeAt(0);
-                range.deleteContents();
+                const range = sel.getRangeAt(0); range.deleteContents();
                 const frag = document.createRange().createContextualFragment(html);
-                range.insertNode(frag);
-                range.setStartAfter(frag.lastChild || frag);
-                range.collapse(true);
-                sel.removeAllRanges();
-                sel.addRange(range);
-            } else {
-                editor.innerHTML += html;
-            }
+                range.insertNode(frag); range.setStartAfter(frag.lastChild || frag); range.collapse(true);
+                sel.removeAllRanges(); sel.addRange(range);
+            } else { editor.innerHTML += html; }
             debouncedSave();
         }
-
         function triggerImageUpload() { document.getElementById('editorImageInput').click(); }
         async function handleEditorImageUpload(event) {
             const files = Array.from(event.target.files);
@@ -504,7 +617,6 @@
             isTransformMode = !isTransformMode;
             const editor = document.getElementById('editor');
             const btn = document.getElementById('transformModeBtn');
-            
             if(isTransformMode) {
                 editor.classList.add('transform-active');
                 btn.classList.add('active');
@@ -512,77 +624,152 @@
             } else {
                 editor.classList.remove('transform-active');
                 btn.classList.remove('active');
-                // Remove styles from images
                 const imgs = editor.querySelectorAll('img');
                 imgs.forEach(img => {
-                    img.style.position = '';
-                    img.style.transform = '';
-                    img.style.width = '';
-                    img.style.cursor = '';
+                    img.style.position = ''; img.style.transform = ''; img.style.width = ''; img.style.cursor = '';
                 });
                 toast('Mode Transform Nonaktif', 'info');
             }
         }
-
-        // Add event listeners to editor for drag/resize
         document.addEventListener('DOMContentLoaded', () => {
             const editor = document.getElementById('editor');
-            
             editor.addEventListener('mousedown', (e) => {
                 if(!isTransformMode) return;
                 const target = e.target;
-                
-                // If clicking on image
                 if(target.tagName === 'IMG') {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault(); e.stopPropagation();
                     activeTransformImg = target;
-                    
-                    // Check if clicking resize handle (bottom-right corner)
                     const rect = target.getBoundingClientRect();
                     const isCorner = (e.clientX > rect.right - 15 && e.clientY > rect.bottom - 15);
-                    
                     if(isCorner) {
-                        isResizing = true;
-                        startX = e.clientX;
-                        startWidth = target.offsetWidth;
+                        isResizing = true; startX = e.clientX; startWidth = target.offsetWidth;
                     } else {
-                        isDragging = true;
-                        startX = e.clientX;
-                        startY = e.clientY;
-                        
-                        // Get current transform values
+                        isDragging = true; startX = e.clientX; startY = e.clientY;
                         const style = window.getComputedStyle(target);
                         const matrix = new DOMMatrix(style.transform);
-                        startLeft = matrix.m41;
-                        startTop = matrix.m42;
+                        startLeft = matrix.m41; startTop = matrix.m42;
                     }
                 }
             });
-
             window.addEventListener('mousemove', (e) => {
                 if(!activeTransformImg) return;
-                
                 if(isResizing) {
                     const dx = e.clientX - startX;
                     activeTransformImg.style.width = (startWidth + dx) + 'px';
-                    activeTransformImg.style.height = 'auto'; // Maintain aspect ratio
-                } 
-                else if(isDragging) {
-                    const dx = e.clientX - startX;
-                    const dy = e.clientY - startY;
+                    activeTransformImg.style.height = 'auto';
+                } else if(isDragging) {
+                    const dx = e.clientX - startX, dy = e.clientY - startY;
                     activeTransformImg.style.position = 'relative';
                     activeTransformImg.style.transform = `translate(${startLeft + dx}px, ${startTop + dy}px)`;
                 }
             });
-
-            window.addEventListener('mouseup', () => {
-                isDragging = false;
-                isResizing = false;
-                activeTransformImg = null;
-            });
+            window.addEventListener('mouseup', () => { isDragging = false; isResizing = false; activeTransformImg = null; });
         });
 
+        // ================= IMAGE PREVIEW MODAL =================
+        function openImagePreview(url, caption='') {
+            const modal = document.getElementById('imagePreviewModal');
+            const img = document.getElementById('previewImage');
+            const cap = document.getElementById('previewCaption');
+            img.src = url; cap.textContent = caption;
+            modal.classList.add('active'); document.body.style.overflow = 'hidden';
+        }
+        function closeImagePreview(event) {
+            if(event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('imagePreviewModal');
+            modal.classList.remove('active'); document.body.style.overflow = '';
+        }
+
+        // ================= ATTACHMENT FUNCTIONS =================
+        async function handleImageAttachmentUpload(event) {
+            const files = Array.from(event.target.files);
+            if(!files.length || !currentRoomId) return;
+            toast('Mengupload gambar...','info');
+            for(const file of files){
+                if(!file.type.startsWith('image/')) continue;
+                try{
+                    const path = `attachments/${currentRoomId}/images/${Date.now()}_${file.name}`;
+                    const { error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
+                    if(uploadError) throw uploadError;
+                    const {  urlData } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
+                    if(!urlData || !urlData.publicUrl) throw new Error('Failed to get URL');
+                    await db.collection('attachments').add({
+                        roomId: currentRoomId, type: 'image', fileUrl: urlData.publicUrl,
+                        fileName: file.name, uploadedBy: currentUser.uid,
+                        uploadedByName: window.userData?.name || 'User',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }catch(e){ console.error(e); toast('Gagal upload: '+e.message,'error'); }
+            }
+            toast('Gambar berhasil diupload','success'); event.target.value='';
+        }
+        async function handleDocAttachmentUpload(event) {
+            const files = Array.from(event.target.files);
+            if(!files.length || !currentRoomId) return;
+            toast('Mengupload dokumen...','info');
+            for(const file of files){
+                const allowed = ['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation'];
+                if(!allowed.includes(file.type)) continue;
+                try{
+                    const path = `attachments/${currentRoomId}/docs/${Date.now()}_${file.name}`;
+                    const { error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
+                    if(uploadError) throw uploadError;
+                    const {  urlData } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
+                    if(!urlData || !urlData.publicUrl) throw new Error('Failed to get URL');
+                    await db.collection('attachments').add({
+                        roomId: currentRoomId, type: 'document', fileUrl: urlData.publicUrl,
+                        fileName: file.name, fileType: file.type, uploadedBy: currentUser.uid,
+                        uploadedByName: window.userData?.name || 'User',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }catch(e){ console.error(e); toast('Gagal upload: '+e.message,'error'); }
+            }
+            toast('Dokumen berhasil diupload','success'); event.target.value='';
+        }
+        function loadAttachments(){
+            if(!currentRoomId) return;
+            if(unsubAttachments) unsubAttachments();
+            unsubAttachments = db.collection('attachments').where('roomId','==',currentRoomId).orderBy('createdAt','desc').onSnapshot(snap => {
+                const images = snap.docs.filter(d => d.data().type === 'image');
+                const docs = snap.docs.filter(d => d.data().type === 'document');
+                // Render Images
+                const grid = document.getElementById('imageAttachmentsGrid');
+                if(images.length === 0){ grid.innerHTML = '<p class="text-xs text-muted col-span-full text-center py-4">Belum ada gambar</p>'; }
+                else {
+                    grid.innerHTML = '';
+                    images.forEach(doc => {
+                        const data = doc.data();
+                        const div = document.createElement('div'); div.className = 'thumbnail-item';
+                        div.onclick = () => openImagePreview(data.fileUrl+'?t='+Date.now(), data.fileName);
+                        div.innerHTML = `<img src="${data.fileUrl}?t=${Date.now()}&thumb=1" alt="${data.fileName}" loading="lazy"><div class="thumbnail-overlay"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg></div>`;
+                        grid.appendChild(div);
+                    });
+                }
+                // Render Documents
+                const list = document.getElementById('docAttachmentsList');
+                if(docs.length === 0){ list.innerHTML = '<p class="text-xs text-muted text-center py-4">Belum ada dokumen</p>'; }
+                else {
+                    list.innerHTML = '';
+                    docs.forEach(doc => {
+                        const data = doc.data();
+                        const iconClass = getFileIconClass(data.fileType);
+                        const div = document.createElement('div'); div.className = 'doc-item';
+                        div.innerHTML = `<div class="doc-icon ${iconClass}"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div><div class="doc-info"><div class="doc-name">${data.fileName}</div><div class="doc-meta">${data.uploadedByName} • ${fmtT(data.createdAt)}</div></div><div class="doc-actions"><button class="doc-btn doc-btn-primary" onclick="window.open('${data.fileUrl}','_blank')">Buka</button></div>`;
+                        list.appendChild(div);
+                    });
+                }
+            });
+        }
+        function getFileIconClass(fileType){
+            if(!fileType) return 'image';
+            if(fileType.includes('pdf')) return 'pdf';
+            if(fileType.includes('word') || fileType.includes('document')) return 'word';
+            if(fileType.includes('excel') || fileType.includes('spreadsheet')) return 'excel';
+            if(fileType.includes('powerpoint') || fileType.includes('presentation')) return 'ppt';
+            return 'image';
+        }
+
+        // ===================== AUTH =====================
         async function handleLogin(){
             const e=document.getElementById('loginEmail').value.trim(),p=document.getElementById('loginPassword').value;
             if(!e||!p)return toast('Email & password harus diisi','error');
@@ -609,7 +796,6 @@
             setLoad('regBtnText','regSpinner',false);
         }
         async function handleLogout(){if(currentRoomId)await cleanup();if(unsubRoom)unsubRoom();await auth.signOut();toast('Berhasil keluar','info');}
-        
         auth.onAuthStateChanged(async(user)=>{
             if(user){
                 currentUser=user;
@@ -632,6 +818,7 @@
             }
         });
 
+        // ===================== QUICK JOIN =====================
         async function handleQuickJoin(){
             const pin = document.getElementById('quickJoinPin').value.trim();
             if(pin.length !== 6) return toast('Masukkan 6 digit PIN','error');
@@ -652,6 +839,7 @@
             document.getElementById('quickJoinPin').value = pin; handleQuickJoin(); document.getElementById('quickJoinPinMobile').value='';
         }
 
+        // ===================== SETTINGS & MASTER =====================
         function showSettings(){
             if(!window.userData)return;
             const u=window.userData;
@@ -720,6 +908,7 @@
             }catch(e){toast(e.message,'error');}
         }
 
+        // ===================== SUPABASE FUNCTIONS =====================
         async function handleProfileUpload(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -742,26 +931,19 @@
                     };
                     reader.onerror = reject; reader.readAsDataURL(file);
                 });
-
                 const fileName = `profile-${currentUser.uid}.png`;
                 const { error: uploadError } = await supabaseClient.storage.from('profile-photos').upload(fileName, croppedBlob, { upsert: true, cacheControl: '0' });
                 if(uploadError) throw uploadError;
-
                 const {  urlData } = supabaseClient.storage.from('profile-photos').getPublicUrl(fileName);
                 if(!urlData || !urlData.publicUrl) throw new Error('Failed to get public URL');
-                
                 const photoUrl = `${urlData.publicUrl}?t=${Date.now()}`;
                 await currentUser.updateProfile({ photoURL: photoUrl });
                 await db.collection('users').doc(currentUser.uid).update({ photoURL: photoUrl });
                 window.userData.photoURL = photoUrl;
                 updateAvatarUI(photoUrl);
                 toast('Foto profil berhasil diubah!','success');
-            } catch (err) { 
-                console.error(err);
-                toast('Gagal upload: ' + err.message, 'error'); 
-            }
+            } catch (err) { console.error(err); toast('Gagal upload: ' + err.message, 'error'); }
         }
-
         async function handleDocUpload(event) {
             const file = event.target.files[0];
             if(!file || !currentRoomId) return;
@@ -772,10 +954,8 @@
             try {
                 const { error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(filePath, file);
                 if(uploadError) throw uploadError;
-                
                 const {  urlData } = supabaseClient.storage.from('meeting-docs').getPublicUrl(filePath);
                 if(!urlData || !urlData.publicUrl) throw new Error('Failed to get public URL');
-                
                 const fileUrl = `${urlData.publicUrl}?t=${Date.now()}`;
                 await db.collection('documents').add({
                     roomId: currentRoomId, fileName: file.name, fileUrl: fileUrl,
@@ -784,12 +964,8 @@
                 });
                 toast('Dokumen berhasil ditambahkan!','success');
                 event.target.value = ''; loadDocuments(currentRoomId);
-            } catch (err) { 
-                console.error(err);
-                toast('Gagal upload: ' + err.message, 'error'); 
-            }
+            } catch (err) { console.error(err); toast('Gagal upload: ' + err.message, 'error'); }
         }
-
         function updateAvatarUI(photoUrl) {
             const ini = initials(window.userData.name);
             const imgTag = photoUrl ? `<img src="${photoUrl}" class="w-full h-full object-cover" onerror="this.parentElement.textContent='${ini}'">` : ini;
@@ -797,6 +973,7 @@
             document.getElementById('settingsAvatar').innerHTML = imgTag;
         }
 
+        // ===================== DASHBOARD =====================
         function loadDashboard(){loadRooms();loadStats();renderCalendar();}
         async function loadStats(){
             try{
@@ -971,7 +1148,7 @@
             document.getElementById('rAgendaBlock').classList.toggle('hidden',!r.agenda);document.getElementById('rTimer').textContent='00:00:00';document.getElementById('rDuration').textContent='';
             window._meetStart=r.createdAt.toDate().getTime();if(timerInterval)clearInterval(timerInterval);timerInterval=setInterval(updateTimer,1000);updateTimer();
             isFocusMode=false;document.body.classList.remove('focus-mode');document.getElementById('focusModeBtn').classList.remove('active');
-            document.getElementById('rEditBtn').classList.toggle('hidden',!isNotulen);document.getElementById('rDocBox').classList.toggle('hidden',!isNotulen);
+            document.getElementById('rEditBtn').classList.toggle('hidden',!isNotulen);
             if(isNotulen){
                 document.getElementById('rPinBox').classList.remove('hidden');document.getElementById('rPin').textContent=r.pin;
                 document.getElementById('rEndBtn').classList.remove('hidden');document.getElementById('rDeleteBtn').classList.remove('hidden');
@@ -979,12 +1156,13 @@
                 document.getElementById('editor').innerHTML=r.notes||'';lastSavedContent=r.notes||'';
                 document.execCommand('defaultParagraphSeparator',false,'p');updateCounts();
                 document.getElementById('editor').oninput=()=>{updateCounts();markUnsaved();debouncedSave();};
-                loadDocuments(rid);
+                loadDocuments(rid); loadAttachments();
             }else{
                 document.getElementById('rPinBox').classList.add('hidden');document.getElementById('rEndBtn').classList.add('hidden');
                 document.getElementById('rDeleteBtn').classList.add('hidden');
                 document.getElementById('notulenMode').classList.add('hidden');document.getElementById('viewerMode').classList.remove('hidden');
                 document.getElementById('viewerNotes').innerHTML=r.notes||'<p class="text-muted italic">Belum ada notulensi...</p>';
+                loadAttachments();
             }
             showView('roomView');setupListeners(rid);
         }
@@ -1034,8 +1212,8 @@
         }
         function hideLeaveModal(){document.getElementById('leaveModal').classList.add('hidden');document.getElementById('leaveModal').classList.remove('flex');}
         async function confirmLeave(){hideLeaveModal();if(isNotulen&&hasUnsaved)await db.collection('rooms').doc(currentRoomId).update({notes:document.getElementById('editor').innerHTML});leaveRoom();}
-        function leaveRoom(){currentRoomId=null;isNotulen=false;hasUnsaved=false;if(timerInterval)clearInterval(timerInterval);if(unsubRoom)unsubRoom();if(unsubAtt)unsubAtt();if(unsubDocs)unsubDocs();showView('dashboardView');loadDashboard();}
-        async function cleanup(){if(unsubRoom)unsubRoom();if(unsubAtt)unsubAtt();if(unsubDocs)unsubDocs();if(timerInterval)clearInterval(timerInterval);if(isNotulen&&currentRoomId)try{await db.collection('rooms').doc(currentRoomId).update({notes:document.getElementById('editor')?.innerHTML||''});}catch(e){}currentRoomId=null;isNotulen=false;hasUnsaved=false;}
+        function leaveRoom(){currentRoomId=null;isNotulen=false;hasUnsaved=false;if(timerInterval)clearInterval(timerInterval);if(unsubRoom)unsubRoom();if(unsubAtt)unsubAtt();if(unsubDocs)unsubDocs();if(unsubAttachments)unsubAttachments();showView('dashboardView');loadDashboard();}
+        async function cleanup(){if(unsubRoom)unsubRoom();if(unsubAtt)unsubAtt();if(unsubDocs)unsubDocs();if(unsubAttachments)unsubAttachments();if(timerInterval)clearInterval(timerInterval);if(isNotulen&&currentRoomId)try{await db.collection('rooms').doc(currentRoomId).update({notes:document.getElementById('editor')?.innerHTML||''});}catch(e){}currentRoomId=null;isNotulen=false;hasUnsaved=false;}
         function showEndModal(){document.getElementById('endModal').classList.remove('hidden');document.getElementById('endModal').classList.add('flex');}
         function hideEndModal(){document.getElementById('endModal').classList.add('hidden');document.getElementById('endModal').classList.remove('flex');}
         async function confirmEnd(){hideEndModal();try{if(isNotulen)await db.collection('rooms').doc(currentRoomId).update({notes:document.getElementById('editor')?.innerHTML||'',status:'selesai'});toast('Rapat diakhiri','info');await cleanup();showView('dashboardView');loadDashboard();}catch(e){toast(e.message,'error');}}
@@ -1052,7 +1230,7 @@
             document.getElementById('notulenMode').classList.add('hidden');document.getElementById('viewerMode').classList.remove('hidden');
             document.getElementById('rTimer').textContent='00:00:00';document.getElementById('rDuration').textContent='';
             document.getElementById('viewerNotes').innerHTML=r.notes||'<p class="text-muted italic">Tidak ada notulensi.</p>';
-            if(timerInterval)clearInterval(timerInterval);if(unsubAtt)unsubAtt();showView('roomView');
+            if(timerInterval)clearInterval(timerInterval);if(unsubAtt)unsubAtt();if(unsubAttachments)unsubAttachments();showView('roomView');loadAttachments();
         }
         function copyPin(){navigator.clipboard.writeText(document.getElementById('rPin').textContent).then(()=>toast('PIN disalin!','success'));}
         async function exportCSV(){
