@@ -53,15 +53,36 @@
         .note-toolbar { position:sticky; top:0; z-index:10; background:rgba(255,255,255,0.95); backdrop-filter:blur(12px); border-bottom:1px solid rgba(229,231,235,0.6); padding:8px 12px; display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
         .tool-btn { padding:6px; border-radius:8px; font-size:13px; font-weight:600; transition:all 0.15s; min-width:32px; min-height:32px; display:inline-flex; align-items:center; justify-content:center; color:#4b5563; cursor:pointer; border:none; background:transparent; }
         .tool-btn:hover { background:#f3f4f6; color:#111827; }
+        .tool-btn.active { background:#2563eb; color:#fff; }
         .tool-sep { width:1px; height:20px; background:#e5e7eb; margin:0 4px; }
         .note-editor { padding:28px 36px; outline:none; line-height:1.75; color:#1f2937; font-family:'Inter',sans-serif; font-size:15px; flex:1; overflow-y:auto; caret-color:#2563eb; }
         .note-editor:empty::before { content:attr(data-placeholder); color:#9ca3af; font-style:italic; pointer-events:none; }
-        .note-editor img { max-width:100%; height:auto; border-radius:8px; margin:8px 0; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
         .note-editor a { color:#2563eb; text-decoration:underline; font-weight:500; }
         .note-editor h1 { font-size:28px; font-weight:700; margin:20px 0 10px; }
         .note-editor h2 { font-size:22px; font-weight:600; margin:16px 0 8px; }
         .note-editor ul { list-style:disc; padding-left:24px; margin-bottom:10px; }
         .note-editor ol { list-style:decimal; padding-left:24px; margin-bottom:10px; }
+        
+        /* ===== TRANSFORM MODE STYLES ===== */
+        .note-editor.transform-active img {
+            outline: 2px dashed #2563eb !important;
+            cursor: grab;
+            position: relative;
+            transition: outline 0.2s;
+        }
+        .note-editor.transform-active img:active { cursor: grabbing; }
+        
+        /* Resize Handle (Pojok Kanan Bawah) */
+        .note-editor.transform-active img::after {
+            content: '';
+            position: absolute; bottom: -6px; right: -6px;
+            width: 12px; height: 12px;
+            background: #2563eb; border: 2px solid white;
+            border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            cursor: nwse-resize;
+            z-index: 10;
+        }
+
         .color-popover { display:none; position:absolute; top:44px; background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:10px; box-shadow:0 10px 25px -5px rgba(0,0,0,0.15); z-index:20; width:150px; }
         .color-popover.active { display:block; animation:scaleIn 0.15s; }
         .color-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
@@ -284,6 +305,9 @@
                                 <button onclick="triggerImageUpload()" class="tool-btn" title="Upload Gambar">🖼️</button>
                                 <input type="file" id="editorImageInput" class="hidden" accept="image/*" multiple onchange="handleEditorImageUpload(event)">
                                 <button onclick="embedLink()" class="tool-btn" title="Embed Link">🔗</button>
+                                <!-- TRANSFORM MODE TOGGLE -->
+                                <div class="tool-sep"></div>
+                                <button onclick="toggleTransformMode()" id="transformModeBtn" class="tool-btn" title="Transform Mode (Drag/Resize Image)">🔧</button>
                             </div>
                             <div class="flex items-center gap-2 ml-2">
                                 <button onclick="toggleFocusMode()" id="focusModeBtn" class="tool-btn text-xs" title="Mode Fokus" onmousedown="event.preventDefault()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
@@ -291,6 +315,7 @@
                                 <span id="saveInd" class="text-[10px] text-gray-400 font-medium flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-lg"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>Tersimpan</span>
                             </div>
                         </div>
+                        <!-- Added id="editor" for JS targeting -->
                         <div id="editor" contenteditable="true" data-placeholder="Ketik notulensi di sini..." class="note-editor w-full"></div>
                         <div class="px-6 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between text-xs text-gray-400 font-medium"><span id="charCount">0 karakter</span><span id="wordCount">0 kata</span></div>
                     </div>
@@ -348,6 +373,13 @@
         let currentCalendarDate = new Date();
         let selectedCalendarDate = null;
         let isFocusMode = false;
+        
+        // TRANSFORM MODE STATE
+        let isTransformMode = false;
+        let activeTransformImg = null;
+        let isDragging = false;
+        let isResizing = false;
+        let startX, startY, startLeft, startTop, startWidth;
 
         const templates = {
             'bimbingan': { type:'bimbingan_skripsi', title:'Bimbingan Skripsi', agenda:'1. Tinjauan Bab Pendahuluan\n2. Evaluasi Metodologi\n3. Revisi Data & Analisis\n4. Jadwal Bimbingan Lanjutan' },
@@ -418,7 +450,6 @@
             },800);
         }
         
-        // FIXED: insertHtmlAtCursor using robust Range API
         function insertHtmlAtCursor(html) {
             const editor = document.getElementById('editor');
             editor.focus();
@@ -428,7 +459,6 @@
                 range.deleteContents();
                 const frag = document.createRange().createContextualFragment(html);
                 range.insertNode(frag);
-                // Move cursor to end of inserted content safely
                 range.setStartAfter(frag.lastChild || frag);
                 range.collapse(true);
                 sel.removeAllRanges();
@@ -451,7 +481,7 @@
                     const path = `images/${currentRoomId}/${Date.now()}_${file.name}`;
                     const { error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
                     if(uploadError) throw uploadError;
-                    const { data: urlData } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
+                    const {  urlData } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
                     if(urlData && urlData.publicUrl) uploadedUrls.push(urlData.publicUrl);
                 }catch(e){console.error(e);}
             }
@@ -468,6 +498,90 @@
                 insertHtmlAtCursor(`<a href="${finalUrl}" target="_blank" style="color:#2563eb;text-decoration:underline;font-weight:500;">${finalUrl}</a>&nbsp;`);
             }
         }
+
+        // ================= TRANSFORM MODE FUNCTIONS =================
+        function toggleTransformMode() {
+            isTransformMode = !isTransformMode;
+            const editor = document.getElementById('editor');
+            const btn = document.getElementById('transformModeBtn');
+            
+            if(isTransformMode) {
+                editor.classList.add('transform-active');
+                btn.classList.add('active');
+                toast('Mode Transform Aktif (Klik gambar untuk geser/resize)', 'info');
+            } else {
+                editor.classList.remove('transform-active');
+                btn.classList.remove('active');
+                // Remove styles from images
+                const imgs = editor.querySelectorAll('img');
+                imgs.forEach(img => {
+                    img.style.position = '';
+                    img.style.transform = '';
+                    img.style.width = '';
+                    img.style.cursor = '';
+                });
+                toast('Mode Transform Nonaktif', 'info');
+            }
+        }
+
+        // Add event listeners to editor for drag/resize
+        document.addEventListener('DOMContentLoaded', () => {
+            const editor = document.getElementById('editor');
+            
+            editor.addEventListener('mousedown', (e) => {
+                if(!isTransformMode) return;
+                const target = e.target;
+                
+                // If clicking on image
+                if(target.tagName === 'IMG') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    activeTransformImg = target;
+                    
+                    // Check if clicking resize handle (bottom-right corner)
+                    const rect = target.getBoundingClientRect();
+                    const isCorner = (e.clientX > rect.right - 15 && e.clientY > rect.bottom - 15);
+                    
+                    if(isCorner) {
+                        isResizing = true;
+                        startX = e.clientX;
+                        startWidth = target.offsetWidth;
+                    } else {
+                        isDragging = true;
+                        startX = e.clientX;
+                        startY = e.clientY;
+                        
+                        // Get current transform values
+                        const style = window.getComputedStyle(target);
+                        const matrix = new DOMMatrix(style.transform);
+                        startLeft = matrix.m41;
+                        startTop = matrix.m42;
+                    }
+                }
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if(!activeTransformImg) return;
+                
+                if(isResizing) {
+                    const dx = e.clientX - startX;
+                    activeTransformImg.style.width = (startWidth + dx) + 'px';
+                    activeTransformImg.style.height = 'auto'; // Maintain aspect ratio
+                } 
+                else if(isDragging) {
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    activeTransformImg.style.position = 'relative';
+                    activeTransformImg.style.transform = `translate(${startLeft + dx}px, ${startTop + dy}px)`;
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+                isResizing = false;
+                activeTransformImg = null;
+            });
+        });
 
         async function handleLogin(){
             const e=document.getElementById('loginEmail').value.trim(),p=document.getElementById('loginPassword').value;
@@ -633,7 +747,7 @@
                 const { error: uploadError } = await supabaseClient.storage.from('profile-photos').upload(fileName, croppedBlob, { upsert: true, cacheControl: '0' });
                 if(uploadError) throw uploadError;
 
-                const { data: urlData } = supabaseClient.storage.from('profile-photos').getPublicUrl(fileName);
+                const {  urlData } = supabaseClient.storage.from('profile-photos').getPublicUrl(fileName);
                 if(!urlData || !urlData.publicUrl) throw new Error('Failed to get public URL');
                 
                 const photoUrl = `${urlData.publicUrl}?t=${Date.now()}`;
@@ -659,7 +773,7 @@
                 const { error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(filePath, file);
                 if(uploadError) throw uploadError;
                 
-                const { data: urlData } = supabaseClient.storage.from('meeting-docs').getPublicUrl(filePath);
+                const {  urlData } = supabaseClient.storage.from('meeting-docs').getPublicUrl(filePath);
                 if(!urlData || !urlData.publicUrl) throw new Error('Failed to get public URL');
                 
                 const fileUrl = `${urlData.publicUrl}?t=${Date.now()}`;
