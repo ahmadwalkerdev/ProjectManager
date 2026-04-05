@@ -13,7 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
-    <!-- Supabase (TAMBAHAN BARU) -->
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
@@ -615,7 +615,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // SUPABASE CONFIG (AUTO-FILLED)
+        // SUPABASE CONFIG
         const SUPABASE_URL = 'https://whtmgsqgcahnfuexrumf.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndodG1nc3FnY2FobmZ1ZXhydW1mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyOTkzNTUsImV4cCI6MjA5MDg3NTM1NX0.BPqnl6SSO6mY4Lxvfpbb8qej8sW8IiOKG4xXG10kwAs'; 
         
@@ -676,7 +676,7 @@
             document.getElementById('rDuration').textContent=h>0?`${h}j ${m}m`:`${m}m`;
         }
 
-        // ===================== EDITOR FUNCTIONS (FIXED) =====================
+        // ===================== EDITOR FUNCTIONS =====================
         function fmt(cmd, value=null) { 
             document.execCommand(cmd, false, value); 
             document.getElementById('editor').focus(); 
@@ -876,7 +876,7 @@
             catch(e){toast(e.message,'error');}
         }
 
-        // ===================== SUPABASE FUNCTIONS (NEW) =====================
+        // ===================== SUPABASE FUNCTIONS =====================
         // 1. Profile Photo Upload
         async function handleProfileUpload(event) {
             const file = event.target.files[0];
@@ -898,13 +898,13 @@
 
                 if(error) throw error;
 
-                // Get Public URL
-                const {  publicUrlData } = supabaseClient
+                // Get Public URL (FIXED: use publicUrl not publicUrlData)
+                const { publicUrl } = supabaseClient
                     .storage
                     .from('profile-photos')
                     .getPublicUrl(fileName);
                 
-                const photoUrl = publicUrlData.publicUrl;
+                const photoUrl = publicUrl;
 
                 // Update Firebase Auth & Firestore
                 await currentUser.updateProfile({ photoURL: photoUrl });
@@ -939,8 +939,8 @@
 
                 if(error) throw error;
 
-                // Get Public URL
-                const {  publicUrlData } = supabaseClient
+                // Get Public URL (FIXED: use publicUrl not publicUrlData)
+                const { publicUrl } = supabaseClient
                     .storage
                     .from('meeting-docs')
                     .getPublicUrl(filePath);
@@ -949,7 +949,7 @@
                 await db.collection('documents').add({
                     roomId: currentRoomId,
                     fileName: file.name,
-                    fileUrl: publicUrlData.publicUrl,
+                    fileUrl: publicUrl,
                     uploadedBy: currentUser.uid,
                     uploadedByName: window.userData?.name || 'User',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
