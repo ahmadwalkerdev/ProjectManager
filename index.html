@@ -479,23 +479,25 @@
                     const path = `attachments/${currentRoomId}/images/${Date.now()}_${file.name}`;
                     
                     // Upload file
-                    const { error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
+                    const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
                     if(uploadError) {
                         console.error('Upload error:', uploadError);
                         throw new Error(`Upload gagal: ${uploadError.message}`);
                     }
                     
-                    // Get public URL
-                    const {  urlData, error: urlError } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
+                    // Get public URL - FIXED DESTRUCTURING
+                    const { data: urlData, error: urlError } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
                     if(urlError) {
                         console.error('Get URL error:', urlError);
                         throw new Error(`Gagal mendapatkan URL: ${urlError.message}`);
                     }
                     if(!urlData || !urlData.publicUrl) {
+                        console.error('Invalid URL data:', urlData);
                         throw new Error('URL tidak valid');
                     }
                     
                     const fileUrl = urlData.publicUrl;
+                    console.log('File uploaded successfully:', fileUrl);
                     
                     // Save metadata to Firestore
                     await db.collection('attachments').add({
@@ -725,10 +727,10 @@
                     const isImage = file.type.startsWith('image/');
                     const path = `attachments/${currentRoomId}/${isImage ? 'images/' : 'docs/'}${Date.now()}_${file.name}`;
                     
-                    const { error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
+                    const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('meeting-docs').upload(path, file);
                     if(uploadError) throw uploadError;
                     
-                    const {  urlData, error: urlError } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
+                    const { data: urlData, error: urlError } = supabaseClient.storage.from('meeting-docs').getPublicUrl(path);
                     if(urlError) throw urlError;
                     
                     const fileUrl = urlData.publicUrl;
