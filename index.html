@@ -141,6 +141,7 @@ let originalEmail = '';
 let isEditingEmail = false;
 let editingResourceId = null;
 let resourceCache = {};
+window.previousView = 'dashboard'; // Track view for back button - exposed to global scope
 
 // --- FUNGSI CLEAR LISTENERS ---
 function clearListeners() {
@@ -184,6 +185,16 @@ toast.classList.remove('opacity-100', 'translate-y-0');
 };
 window.switchView = (viewId) => {
 const views = ['dashboard', 'settings', 'live', 'setup-profile'];
+// Track current visible view as previous before switching
+const currentVisible = views.find(v => {
+    const el = document.getElementById('view-' + v);
+    return el && !el.classList.contains('hidden');
+});
+// Only track if current is not settings and not the same as target
+if (currentVisible && currentVisible !== 'settings' && currentVisible !== viewId) {
+    window.previousView = currentVisible;
+    console.log('Tracking previousView:', window.previousView);
+}
 views.forEach(v => {
 const el = document.getElementById('view-' + v);
 if (el) el.classList.add('hidden');
@@ -1186,7 +1197,14 @@ function initQuillEditor() {
         quill = null;
     }
 
-    // Ensure DOM element is clean
+    // Ensure DOM element is clean - remove any existing Quill elements
+    const wrapperEl = document.getElementById('editorWrapper');
+    if (wrapperEl) {
+        wrapperEl.querySelectorAll('.ql-toolbar, .ql-container').forEach(el => {
+            console.log('Removing existing Quill element:', el.className);
+            el.remove();
+        });
+    }
     editorEl.innerHTML = '';
     editorEl.removeAttribute('contenteditable');
 
@@ -1242,16 +1260,6 @@ function initQuillEditor() {
             quill.enable();
             // Don't focus immediately - let the user click first
             // quill.focus();
-        }
-
-        // Remove duplicate containers only if they exist
-        const containers = document.querySelectorAll('#minutesInput .ql-container');
-        const toolbars = document.querySelectorAll('#minutesInput .ql-toolbar');
-        if (containers.length > 1) {
-            containers.forEach((el, i) => { if (i > 0) el.remove(); });
-        }
-        if (toolbars.length > 1) {
-            toolbars.forEach((el, i) => { if (i > 0) el.remove(); });
         }
 
         // Simple word count without toolbar modification
@@ -1582,6 +1590,11 @@ function destroyQuill() {
 
     // Clear the DOM element to ensure clean slate
     const editorEl = document.getElementById('minutesInput');
+    const wrapperEl = document.getElementById('editorWrapper');
+    if (wrapperEl) {
+        // Remove ALL Quill elements (toolbar + container) inside wrapper
+        wrapperEl.querySelectorAll('.ql-toolbar, .ql-container').forEach(el => el.remove());
+    }
     if (editorEl) {
         editorEl.innerHTML = '';
         // Remove any Quill-related classes or attributes
@@ -2087,6 +2100,19 @@ window.minimizeRoom = () => {
     switchView('dashboard');
     activeRoom = null;
 };
+
+window.toggleFullscreenEditor = () => {
+    const editMinutes = document.getElementById('editMinutes');
+    if (editMinutes) {
+        editMinutes.classList.toggle('fullscreen');
+        // Resize Quill after toggle
+        if (quill) {
+            setTimeout(() => {
+                quill.resize();
+            }, 100);
+        }
+    }
+};
 window.openResourceModal = () => { const n = document.getElementById('resName'); const u = document.getElementById('resUrl'); if(n) n.value = ''; if(u) u.value = ''; toggleModal('addResourceModal', true); };
 
 window.checkPasswordStrength = function(inputSelector, textSelector, barSelector, containerSelector) {
@@ -2266,6 +2292,30 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; 
 .ql-container.ql-snow { border-color: #e2e8f0 !important; }
 .ql-editor { min-height: 300px; background: #ffffff; }
 .ql-editor p { margin-bottom: 0.5em; }
+
+/* Fullscreen editor for mobile */
+@media (max-width: 1024px) {
+    #editMinutes.fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
+        height: 100vh !important;
+        background: white;
+    }
+    #editMinutes.fullscreen #editorWrapper {
+        flex: 1;
+        height: calc(100vh - 140px);
+    }
+    #editMinutes.fullscreen #minutesInput {
+        height: 100%;
+    }
+    #editMinutes.fullscreen .ql-editor {
+        min-height: calc(100vh - 200px);
+    }
+}
 
 /* Placeholder when empty */
 .ql-editor.ql-blank::before {
@@ -2539,8 +2589,8 @@ Sudah punya akun? <button onclick="window.switchAuthMode('login')" class="text-i
 
 <!-- VIEW: SETTINGS -->
 <div id="view-settings" class="hidden page-fade max-w-3xl w-full mx-auto p-6 lg:p-10 space-y-8 flex-1 flex flex-col">
-<button onclick="window.switchView('dashboard')" class="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors w-fit">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Kembali ke Dashboard
+<button onclick="window.switchView(window.previousView === 'live' ? 'live' : 'dashboard')" class="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors w-fit">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Kembali
 </button>
 <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-8">
 <div class="relative w-24 h-24 shrink-0">
@@ -2817,6 +2867,11 @@ Pengaturan Lanjutan
                                 <polyline points="12 6 12 12 16 14"/>
                             </svg>
                             <span class="text-xs text-slate-500 font-medium">Kontrol Notulen</span>
+                            <button onclick="window.toggleFullscreenEditor()" class="lg:hidden ml-2 p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-all" title="Layar Penuh">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                                </svg>
+                            </button>
                         </div>
                         <div class="flex items-center gap-3">
                             <button onclick="exportMinutes()"
