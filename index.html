@@ -483,6 +483,16 @@
             return () => { document.body.style.overflow = ''; };
           }, [confirmDialog, clientProfile, isModalOpen, isReportsOpen]);
 
+          // Debug Modal State Changes
+          useEffect(() => {
+            console.log('Modal States Changed:', { 
+              isModalOpen, 
+              isReportsOpen, 
+              hasClientProfile: !!clientProfile, 
+              hasConfirmDialog: !!confirmDialog 
+            });
+          }, [isModalOpen, isReportsOpen, clientProfile, confirmDialog]);
+
           // Handle Auth State
           useEffect(() => {
             const unsubscribe = auth.onAuthStateChanged((u) => {
@@ -814,6 +824,7 @@
               items: [{ name: '', price: '', isCompleted: false }],
               notes: ''
             });
+            console.log('Opening Add Modal - Setting isModalOpen to true');
             setIsModalOpen(true);
           };
 
@@ -2398,7 +2409,7 @@
                             <p className={`text-[10px] font-bold uppercase tracking-widest ${editingOrder ? 'text-amber-600' : 'text-indigo-500'}`}>{editingOrder ? 'Perbarui detail pesanan' : 'Tambah pesanan baru ke daftar'}</p>
                           </div>
                         </div>
-                        <button onClick={() => setIsModalOpen(false)} className="relative p-2.5 hover:bg-white/80 hover:shadow-md rounded-xl transition-all text-slate-400 hover:text-slate-700 hover:rotate-90 duration-300" title="Tutup (ESC)"><X size={22} /></button>
+                        <button onClick={() => { console.log('Closing Modal - Setting isModalOpen to false'); setIsModalOpen(false); }} className="relative p-2.5 hover:bg-white/80 hover:shadow-md rounded-xl transition-all text-slate-400 hover:text-slate-700 hover:rotate-90 duration-300" title="Tutup (ESC)"><X size={22} /></button>
                       </div>
                       
                       <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -2649,8 +2660,12 @@
               )}
 
               {/* ═══════════ FLOATING ACTION BUTTON (Mobile Only) ═══════════ */}
-              {!isModalOpen && !isReportsOpen && !clientProfile && !confirmDialog && (
-                <div className="md:hidden fixed bottom-6 right-5 z-50 flex flex-col items-end gap-3">
+              {(() => {
+                const shouldShow = !isModalOpen && !isReportsOpen && !clientProfile && !confirmDialog;
+                console.log('FAB Visibility Check:', { isModalOpen, isReportsOpen, clientProfile: !!clientProfile, confirmDialog: !!confirmDialog, shouldShow });
+                return shouldShow;
+              })() && (
+                <div className="md:hidden fixed bottom-6 right-5 z-50 flex flex-col items-end gap-3" style={{ display: (!isModalOpen && !isReportsOpen && !clientProfile && !confirmDialog) ? 'flex' : 'none' }}>
                   {/* Reports quick access (only show if there are orders) */}
                   {orders.length > 0 && (
                     <button 
