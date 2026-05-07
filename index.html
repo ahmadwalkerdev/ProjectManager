@@ -39,7 +39,75 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        
+        /* ═══════════════════════════════════════════════════════════
+           MOBILE TOUCH INTERACTIONS
+           ═══════════════════════════════════════════════════════════ */
+        @media (max-width: 768px) {
+            .touch-target {
+                min-height: 44px;
+                min-width: 44px;
+                -webkit-tap-highlight-color: rgba(99, 102, 241, 0.1);
+            }
+            
+            .mobile-card {
+                transform: translateZ(0);
+                -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
+                transition: transform 0.3s ease;
+            }
+            
+            .mobile-card:active {
+                transform: scale(0.98);
+                transition: transform 0.1s ease;
+            }
+            
+            .swipe-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scroll-snap-type: x mandatory;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            
+            .swipe-container::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .swipe-item {
+                scroll-snap-align: start;
+                flex-shrink: 0;
+            }
+            
+            .mobile-button {
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .mobile-button::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 0;
+                height: 0;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.5);
+                transform: translate(-50%, -50%);
+                transition: width 0.6s, height 0.6s;
+            }
+            
+            .mobile-button:active::after {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .mobile-nav {
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+            }
+        }
+        .glass-card { background: rgba(192, 165, 165, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
@@ -1174,7 +1242,15 @@
 
                   {/* User Pill + Action Buttons */}
                   <div className="flex items-center gap-2 md:gap-2.5 lg:gap-3 shrink-0 flex-nowrap">
-                    {/* User Badge */}
+                    {/* User Badge - Mobile Optimized */}
+                    <div className="flex lg:hidden items-center gap-2.5 pl-1.5 pr-4 py-1.5 bg-white border border-slate-200 rounded-full shadow-sm">
+                      <img src={user.photoURL} className="w-8 h-8 rounded-full border-2 border-white ring-2 ring-indigo-100" alt={user.displayName} />
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-black text-slate-700 leading-none">{user.displayName?.split(' ')[0]}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Desktop User Badge */}
                     <div className="hidden lg:flex items-center gap-2.5 pl-1.5 pr-4 py-1.5 bg-white border border-slate-200 rounded-full shadow-sm">
                       <img src={user.photoURL} className="w-7 h-7 rounded-full border-2 border-white ring-2 ring-indigo-100" alt={user.displayName} />
                       <div className="flex flex-col">
@@ -1190,37 +1266,60 @@
                       onChange={handleImportFile} 
                       className="hidden" 
                     />
-                    <button 
-                      onClick={() => fileInputRef.current?.click()} 
-                      disabled={isImporting}
-                      className="group bg-white hover:bg-indigo-50 hover:border-indigo-200 text-slate-600 hover:text-indigo-600 px-3 md:px-5 py-3 md:py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all border border-slate-200 font-bold shadow-sm hover:shadow-md text-sm disabled:opacity-50"
-                      title="Import data dari backup JSON"
-                    >
-                      {isImporting ? (
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      ) : (
-                        <Upload size={18} className="group-hover:-translate-y-0.5 transition-transform" />
-                      )}
-                      <span className="hidden lg:inline">{isImporting ? 'Importing...' : 'Import'}</span>
-                    </button>
-                    <button onClick={() => setIsReportsOpen(true)} className="group bg-white hover:bg-emerald-50 hover:border-emerald-200 text-slate-600 hover:text-emerald-600 px-3 md:px-5 py-3 md:py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all border border-slate-200 font-bold shadow-sm hover:shadow-md text-sm">
-                      <TrendingUp size={18} className="group-hover:scale-110 transition-transform" /> 
-                      <span className="hidden lg:inline">Laporan</span>
-                    </button>
-                    <button onClick={openAddModal} className="group relative bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 md:px-6 py-3 md:py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-300/50 hover:shadow-xl hover:shadow-indigo-400/50 font-black active:scale-95 text-sm overflow-hidden">
-                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
-                      <Plus size={20} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300 relative" /> 
-                      <span className="relative hidden lg:inline">Pesanan Baru</span>
-                    </button>
-                    <button onClick={handleLogout} className="group bg-white hover:bg-red-50 hover:border-red-200 text-slate-400 hover:text-red-500 p-3 md:p-3.5 rounded-xl flex items-center justify-center transition-all border border-slate-200 shadow-sm hover:shadow-md" title="Keluar">
-                      <LogOut size={18} className="group-hover:translate-x-0.5 transition-transform" />
-                    </button>
+                    {/* Mobile Action Buttons */}
+                    <div className="flex lg:hidden items-center gap-2">
+                      <button 
+                        onClick={() => fileInputRef.current?.click()} 
+                        disabled={isImporting}
+                        className="group bg-white hover:bg-indigo-50 hover:border-indigo-200 text-slate-600 hover:text-indigo-600 p-4 rounded-xl flex items-center justify-center transition-all border border-slate-200 font-bold shadow-sm hover:shadow-md disabled:opacity-50 touch-target mobile-button"
+                        title="Import data dari backup JSON"
+                      >
+                        {isImporting ? (
+                          <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Upload size={20} className="group-hover:-translate-y-0.5 transition-transform" />
+                        )}
+                      </button>
+                      <button onClick={openAddModal} className="group relative bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white p-4 rounded-xl flex items-center justify-center transition-all shadow-lg shadow-indigo-300/50 hover:shadow-xl hover:shadow-indigo-400/50 font-black active:scale-95 touch-target mobile-button">
+                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
+                        <Plus size={24} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300 relative" /> 
+                      </button>
+                    </div>
+                    
+                    {/* Desktop Action Buttons */}
+                    <div className="hidden lg:flex items-center gap-2 md:gap-2.5 lg:gap-3">
+                      <button 
+                        onClick={() => fileInputRef.current?.click()} 
+                        disabled={isImporting}
+                        className="group bg-white hover:bg-indigo-50 hover:border-indigo-200 text-slate-600 hover:text-indigo-600 px-3 md:px-5 py-3 md:py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all border border-slate-200 font-bold shadow-sm hover:shadow-md text-sm disabled:opacity-50"
+                        title="Import data dari backup JSON"
+                      >
+                        {isImporting ? (
+                          <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Upload size={18} className="group-hover:-translate-y-0.5 transition-transform" />
+                        )}
+                        <span className="hidden lg:inline">{isImporting ? 'Importing...' : 'Import'}</span>
+                      </button>
+                      <button onClick={() => setIsReportsOpen(true)} className="group bg-white hover:bg-emerald-50 hover:border-emerald-200 text-slate-600 hover:text-emerald-600 px-3 md:px-5 py-3 md:py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all border border-slate-200 font-bold shadow-sm hover:shadow-md text-sm">
+                        <TrendingUp size={18} className="group-hover:scale-110 transition-transform" /> 
+                        <span className="hidden lg:inline">Laporan</span>
+                      </button>
+                      <button onClick={openAddModal} className="group relative bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 md:px-6 py-3 md:py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-300/50 hover:shadow-xl hover:shadow-indigo-400/50 font-black active:scale-95 text-sm overflow-hidden">
+                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
+                        <Plus size={20} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300 relative" /> 
+                        <span className="relative hidden lg:inline">Pesanan Baru</span>
+                      </button>
+                      <button onClick={handleLogout} className="group bg-white hover:bg-red-50 hover:border-red-200 text-slate-400 hover:text-red-500 p-3 md:p-3.5 rounded-xl flex items-center justify-center transition-all border border-slate-200 shadow-sm hover:shadow-md" title="Keluar">
+                        <LogOut size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-in fade-in zoom-in-95 duration-700 delay-150">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in zoom-in-95 duration-700 delay-150">
                   {/* Premium Revenue Card */}
-                  <div className="md:col-span-2 lg:col-span-2 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 rounded-2xl md:rounded-3xl p-5 md:p-7 text-white relative overflow-hidden group hover:shadow-2xl hover:shadow-indigo-500/30 transition-all duration-500">
+                  <div className="md:col-span-2 lg:col-span-2 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-7 text-white relative overflow-hidden group hover:shadow-2xl hover:shadow-indigo-500/30 transition-all duration-500 mobile-card">
                     {/* Decorative gradient orbs */}
                     <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-500/20 rounded-full -mr-36 -mt-36 blur-[100px] group-hover:bg-indigo-500/30 transition-all duration-700"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full -ml-32 -mb-32 blur-[100px]"></div>
@@ -1320,26 +1419,30 @@
 
                   {/* Card Kecil: Stat Cards */}
                   <div className="space-y-4">
-                    <StatCard 
-                      icon={Box} 
-                      label="Total Order" 
-                      value={stats.totalOrders} 
-                      color="indigo" 
-                      subtitle={`${currentMonthData.count} bulan ini`}
-                      trend={currentMonthData.count}
-                    />
-                    <StatCard 
-                      icon={AlertCircle} 
-                      label="In Progress" 
-                      value={stats.active} 
-                      color="amber"
-                      subtitle={stats.totalOrders > 0 ? `dari ${stats.totalOrders}` : ''}
-                      progress={stats.totalOrders > 0 ? (stats.active / stats.totalOrders) * 100 : 0}
-                    />
+                    <div className="mobile-card">
+                      <StatCard 
+                        icon={Box} 
+                        label="Total Order" 
+                        value={stats.totalOrders} 
+                        color="indigo" 
+                        subtitle={`${currentMonthData.count} bulan ini`}
+                        trend={currentMonthData.count}
+                      />
+                    </div>
+                    <div className="mobile-card">
+                      <StatCard 
+                        icon={AlertCircle} 
+                        label="In Progress" 
+                        value={stats.active} 
+                        color="amber"
+                        subtitle={stats.totalOrders > 0 ? `dari ${stats.totalOrders}` : ''}
+                        progress={stats.totalOrders > 0 ? (stats.active / stats.totalOrders) * 100 : 0}
+                      />
+                    </div>
                   </div>
                   
                   {/* Premium Monthly Activity Card */}
-                  <div className="bg-gradient-to-br from-white to-slate-50 backdrop-blur-sm p-5 md:p-6 rounded-2xl md:rounded-3xl border border-slate-200 flex flex-col group hover:shadow-xl hover:border-indigo-200 transition-all relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-white to-slate-50 backdrop-blur-sm p-4 sm:p-5 md:p-6 rounded-2xl md:rounded-3xl border border-slate-200 flex flex-col group hover:shadow-xl hover:border-indigo-200 transition-all relative overflow-hidden mobile-card">
                     {/* Decorative corner gradient */}
                     <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-100/50 rounded-full blur-2xl group-hover:bg-indigo-200/60 transition-colors"></div>
                     
